@@ -2,4 +2,4 @@
 Games for school
 
 
-[Baldi's Basics](strandedsunblockedgames.tk/Baldi)
+[Baldi's Basics](https://strandedsunblockedgames.tk/Baldi)
