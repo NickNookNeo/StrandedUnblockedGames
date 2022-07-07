@@ -1,0 +1,10 @@
+# build your site out to the dist directory (or wherever works for you)
+- run: npm run build
+
+# add to web3 with `include_hidden: true`
+- uses: web3-storage/add-to-web3@v2.1.0
+  id: web3
+  with:
+    web3_token: ${{ secrets.WEB3_STORAGE_TOKEN }}
+    path_to_add: 'dist'
+    include_hidden: true
