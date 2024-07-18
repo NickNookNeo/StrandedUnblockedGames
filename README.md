@@ -1,5 +1,5 @@
-# StrandedUnblockedGames
-Games for school
+# Stranded's HTML Crawls
+Games
 
 
 [Baldi's Basics](https://nicknookneo.github.io/StrandedUnblockedGames/Baldi)
