@@ -2,10 +2,8 @@
 Games for school
 
 
-[Baldi's Basics](https://strandedsunblockedgames.tk/Baldi)
+[Baldi's Basics](https://nicknookneo.github.io/StrandedUnblockedGames/Baldi)
 
-[Super Mario 64](https://strandedsunblockedgames.tk/Mario64)
+[Super Mario 64](https://nicknookneo.github.io/StrandedUnblockedGames/Mario64)
 
-[Backrooms](https://strandedsunblockedgames.tk/Backrooms)
-
-[Reddit](https://strandedsunblockedgames.tk/Reddit)
+[Backrooms](https://nicknookneo.github.io/StrandedUnblockedGames/Backrooms)
