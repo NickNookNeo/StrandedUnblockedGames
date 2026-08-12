@@ -67,21 +67,21 @@
     .player-wrapper {
       display: flex;
       flex-direction: column;
-      width: 100%;
-      max-width: 800px;
+      width: fit-content;
+      max-width: 95vw;
       background-color: #000;
       border-radius: 12px;
       overflow: hidden;
       border: 1px solid var(--border-color);
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-      transition: aspect-ratio 0.3s ease;
     }
 
     .player-container {
       width: 100%;
-      aspect-ratio: 4 / 3; 
       background-color: #000;
-      transition: aspect-ratio 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     #flash-container {
@@ -135,7 +135,7 @@
 
     .player-wrapper:fullscreen .player-container {
       height: calc(100vh - 53px);
-      aspect-ratio: auto !important;
+      width: 100%;
     }
   </style>
 
@@ -151,7 +151,7 @@
 </head>
 <body>
 
-  <div class="header-container">
+  <div class="header-container" id="header">
     <a href="../index.html" class="back-btn">&larr; Games List</a>
     <h1>Cactus McCoy</h1>
     <div style="width: 100px;"></div> 
@@ -179,6 +179,7 @@
     window.addEventListener("DOMContentLoaded", () => {
       const wrapper = document.getElementById("player-wrapper");
       const playerContainer = document.getElementById("player-container");
+      const header = document.getElementById("header");
       const fsBtn = document.getElementById("fs-btn");
       const playPauseBtn = document.getElementById("play-pause-btn");
       const reloadBtn = document.getElementById("reload-btn");
@@ -193,16 +194,30 @@
         return null;
       }
 
-      const checkMetadata = setInterval(() => {
-        const player = getRufflePlayer();
-        if (!player) return;
+      function applyDimensions(width, height) {
+        if (!width || !height) return;
+        
+        playerContainer.style.aspectRatio = `${width} / ${height}`;
+        wrapper.style.width = `${width}px`;
+        header.style.maxWidth = `${width}px`;
+      }
 
-        const meta = player.metadata || (player.ruffle && player.ruffle().metadata);
-        if (meta && meta.width && meta.height) {
-          playerContainer.style.aspectRatio = `${meta.width} / ${meta.height}`;
-          clearInterval(checkMetadata);
+      const observer = new MutationObserver(() => {
+        const player = getRufflePlayer();
+        if (player) {
+          player.addEventListener("loadedmetadata", () => {
+            const meta = player.metadata || (player.ruffle && player.ruffle().metadata);
+            if (meta) applyDimensions(meta.width, meta.height);
+          });
+
+          const meta = player.metadata || (player.ruffle && player.ruffle().metadata);
+          if (meta) applyDimensions(meta.width, meta.height);
+          
+          observer.disconnect();
         }
-      }, 100);
+      });
+
+      observer.observe(document.body, { childList: true, subtree: true });
 
       function isPlayerPaused(player) {
         if (!player) return false;
