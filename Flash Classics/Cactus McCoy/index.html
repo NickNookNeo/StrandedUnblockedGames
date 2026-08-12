@@ -153,7 +153,17 @@
       background: radial-gradient(circle at center, #1e293b 0%, #050811 100%) !important;
     }
 
-    /* Control bar attached to the game viewport boundaries */
+    /* Activation zone restricted to the bottom 24px */
+    .control-hover-trigger {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 24px;
+      z-index: 49;
+    }
+
+    /* Control bar attached to bottom edge */
     .control-bar {
       position: absolute;
       bottom: 0;
@@ -167,13 +177,14 @@
       padding: 10px 16px;
       border-top: 1px solid var(--border-color);
       transform: translateY(100%);
-      transition: transform 0.25s ease-in-out;
+      transition: transform 0.2s ease-in-out;
       z-index: 50;
     }
 
-    .game-container:hover .control-bar,
-    .control-bar.visible,
-    .control-bar:hover {
+    /* Bar appears when hovering over the trigger zone or the bar itself */
+    .control-hover-trigger:hover + .control-bar,
+    .control-bar:hover,
+    .control-bar.visible {
       transform: translateY(0);
     }
 
@@ -329,6 +340,9 @@
         <p>Unable to load Flash content.</p>
       </object>
 
+      <!-- Hover Zone to control activation radius -->
+      <div class="control-hover-trigger"></div>
+
       <div class="control-bar" id="control-bar">
         <div class="control-group">
           <button class="control-btn" id="play-pause-btn">Pause</button>
@@ -433,7 +447,6 @@
         return document.querySelector("ruffle-embed, ruffle-object, ruffle-player, #flash-container");
       }
 
-      // Automatically resizes game-container to fit exact SWF stage aspect ratio
       function fitGameContainer() {
         const player = getPlayer();
         if (!wrapper || !gameContainer || !player) return;
