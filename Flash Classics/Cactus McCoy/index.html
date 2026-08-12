@@ -38,7 +38,6 @@
       align-items: center;
     }
 
-    /* Header Container */
     .header-container {
       width: 100%;
       max-width: 1200px;
@@ -97,7 +96,6 @@
       width: 100%;
     }
 
-    /* Outer Stage Wrapper */
     .player-wrapper {
       position: relative;
       width: 100%;
@@ -113,7 +111,6 @@
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
     }
 
-    /* Force Ruffle Elements Transparent to reveal global background */
     ruffle-embed, ruffle-object, ruffle-player, #flash-container {
       width: 100% !important;
       height: 100% !important;
@@ -121,9 +118,15 @@
       align-items: center !important;
       justify-content: center !important;
       background: transparent !important;
+      --ruffle-background-color: transparent !important;
     }
 
-    /* Fullscreen Background Override */
+    ruffle-player::part(container),
+    ruffle-embed::part(container),
+    ruffle-object::part(container) {
+      background: transparent !important;
+    }
+
     .player-wrapper:fullscreen,
     .player-wrapper:-webkit-full-screen {
       width: 100vw !important;
@@ -135,7 +138,6 @@
       background: var(--bg-gradient) !important;
     }
 
-    /* Auto-Hiding Control Bar */
     .control-bar {
       position: absolute;
       bottom: 0;
@@ -181,7 +183,6 @@
       color: var(--accent-color);
     }
 
-    /* Modals */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -256,23 +257,15 @@
       font-family: monospace;
       font-size: 0.8rem;
       cursor: pointer;
-      min-width: 100px;
+      min-width: 110px;
       text-align: center;
     }
 
     .bind-key.listening {
       background: var(--accent-color);
       color: #000;
-      animation: pulse 1s infinite;
     }
 
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.6; }
-      100% { opacity: 1; }
-    }
-
-    /* Theater / Fullscreen Mode */
     body.theater-mode .header-container { display: none !important; }
     body.theater-mode .player-wrapper {
       max-width: 100vw !important;
@@ -289,7 +282,9 @@
     window.RufflePlayer.config = {
       "scale": "showAll",
       "forceScale": false,
-      "letterbox": "off"
+      "letterbox": "off",
+      "wmode": "transparent",
+      "backgroundColor": null
     };
   </script>
 </head>
@@ -311,6 +306,8 @@
   <div class="player-wrapper" id="player-wrapper" tabindex="0">
     <object id="flash-container" type="application/x-shockwave-flash" data="cactusmccoy.swf">
       <param name="scale" value="showAll" />
+      <param name="wmode" value="transparent" />
+      <param name="bgcolor" value="transparent" />
       <p>Unable to load Flash content.</p>
     </object>
 
@@ -326,75 +323,77 @@
     </div>
   </div>
 
-  <!-- Keyboard Remapping Modal -->
   <div class="modal-overlay" id="kb-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>Keyboard Mapping</h3>
+        <h3>Keyboard Remapping (Key ➔ Input)</h3>
         <button class="close-modal-btn" id="close-kb">&times;</button>
       </div>
       <div class="bind-row">
-        <span>Move Left</span>
-        <button class="bind-key kb-bind" data-action="left">ArrowLeft</button>
+        <span>Output: Left Arrow</span>
+        <button class="bind-key kb-bind" data-target="ArrowLeft">ArrowLeft</button>
       </div>
       <div class="bind-row">
-        <span>Move Right</span>
-        <button class="bind-key kb-bind" data-action="right">ArrowRight</button>
+        <span>Output: Right Arrow</span>
+        <button class="bind-key kb-bind" data-target="ArrowRight">ArrowRight</button>
       </div>
       <div class="bind-row">
-        <span>Move Up</span>
-        <button class="bind-key kb-bind" data-action="up">ArrowUp</button>
+        <span>Output: Up Arrow</span>
+        <button class="bind-key kb-bind" data-target="ArrowUp">ArrowUp</button>
       </div>
       <div class="bind-row">
-        <span>Move Down</span>
-        <button class="bind-key kb-bind" data-action="down">ArrowDown</button>
+        <span>Output: Down Arrow</span>
+        <button class="bind-key kb-bind" data-target="ArrowDown">ArrowDown</button>
       </div>
       <div class="bind-row">
-        <span>Jump / Action 1</span>
-        <button class="bind-key kb-bind" data-action="jump">a</button>
+        <span>Output: Key 'A'</span>
+        <button class="bind-key kb-bind" data-target="KeyA">A</button>
       </div>
       <div class="bind-row">
-        <span>Attack / Action 2</span>
-        <button class="bind-key kb-bind" data-action="attack">s</button>
+        <span>Output: Key 'S'</span>
+        <button class="bind-key kb-bind" data-target="KeyS">S</button>
       </div>
       <div class="bind-row">
-        <span>Special / Action 3</span>
-        <button class="bind-key kb-bind" data-action="special">d</button>
+        <span>Output: Key 'D'</span>
+        <button class="bind-key kb-bind" data-target="KeyD">D</button>
+      </div>
+      <div class="bind-row">
+        <span>Output: Spacebar</span>
+        <button class="bind-key kb-bind" data-target="Space">Space</button>
       </div>
     </div>
   </div>
 
-  <!-- Controller Remapping Modal -->
   <div class="modal-overlay" id="mapper-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>Controller Remapping</h3>
+        <h3>Controller Remapping (Button ➔ Input)</h3>
         <button class="close-modal-btn" id="close-mapper">&times;</button>
       </div>
       <p style="font-size: 0.8rem; color: #38bdf8; margin: 0;" id="pad-status">Searching for controller...</p>
       <div class="bind-row">
-        <span>Button A (Bottom)</span>
-        <button class="bind-key pad-bind" data-pad-btn="0">a</button>
+        <span>Button A ➔ Output</span>
+        <button class="bind-key pad-bind" data-pad-btn="0">A</button>
       </div>
       <div class="bind-row">
-        <span>Button B (Right)</span>
-        <button class="bind-key pad-bind" data-pad-btn="1">s</button>
+        <span>Button B ➔ Output</span>
+        <button class="bind-key pad-bind" data-pad-btn="1">S</button>
       </div>
       <div class="bind-row">
-        <span>Button X (Left)</span>
-        <button class="bind-key pad-bind" data-pad-btn="2">a</button>
+        <span>Button X ➔ Output</span>
+        <button class="bind-key pad-bind" data-pad-btn="2">A</button>
       </div>
       <div class="bind-row">
-        <span>Button Y (Top)</span>
-        <button class="bind-key pad-bind" data-pad-btn="3">d</button>
+        <span>Button Y ➔ Output</span>
+        <button class="bind-key pad-bind" data-pad-btn="3">D</button>
       </div>
       <div class="bind-row">
-        <span>Left Bumper (LB)</span>
-        <button class="bind-key pad-bind" data-pad-btn="4">q</button>
+        <span>Bumper LB ➔ Output</span>
+        <button class="bind-key pad-bind" data-pad-btn="4">ArrowLeft</button>
       </div>
       <div class="bind-row">
-        <span>Right Bumper (RB)</span>
-        <button class="bind-key pad-bind" data-pad-btn="5">e</button>
+        <span>Bumper RB ➔ Output</span>
+        <button class="bind-key pad-bind" data-pad-btn="5">ArrowRight</button>
       </div>
     </div>
   </div>
@@ -408,37 +407,35 @@
       const padStatus = document.getElementById("pad-status");
 
       let activeListeningBtn = null;
-      let listeningType = null; // 'kb' or 'pad'
+      let listeningType = null;
       let isPaused = false;
 
-      // Active Key Map Definitions
-      const kbMap = {
-        left:    { key: "ArrowLeft",  code: "ArrowLeft",  keyCode: 37 },
-        right:   { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
-        up:      { key: "ArrowUp",    code: "ArrowUp",    keyCode: 38 },
-        down:    { key: "ArrowDown",  code: "ArrowDown",  keyCode: 40 },
-        jump:    { key: "a",          code: "KeyA",       keyCode: 65 },
-        attack:  { key: "s",          code: "KeyS",       keyCode: 83 },
-        special: { key: "d",          code: "KeyD",       keyCode: 68 }
+      const keyMap = {
+        ArrowLeft:  { key: "ArrowLeft",  code: "ArrowLeft",  keyCode: 37 },
+        ArrowRight: { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
+        ArrowUp:    { key: "ArrowUp",    code: "ArrowUp",    keyCode: 38 },
+        ArrowDown:  { key: "ArrowDown",  code: "ArrowDown",  keyCode: 40 },
+        KeyA:       { key: "a",          code: "KeyA",       keyCode: 65 },
+        KeyS:       { key: "s",          code: "KeyS",       keyCode: 83 },
+        KeyD:       { key: "d",          code: "KeyD",       keyCode: 68 },
+        Space:      { key: " ",          code: "Space",      keyCode: 32 }
       };
 
       const controllerBinds = {
-        0: { key: "a", code: "KeyA", keyCode: 65 }, // Button A
-        1: { key: "s", code: "KeyS", keyCode: 83 }, // Button B
-        2: { key: "a", code: "KeyA", keyCode: 65 }, // Button X
-        3: { key: "d", code: "KeyD", keyCode: 68 }, // Button Y
-        4: { key: "q", code: "KeyQ", keyCode: 81 }, // LB
-        5: { key: "e", code: "KeyE", keyCode: 69 }  // RB
+        0: keyMap.KeyA,
+        1: keyMap.KeyS,
+        2: keyMap.KeyA,
+        3: keyMap.KeyD,
+        4: keyMap.ArrowLeft,
+        5: keyMap.ArrowRight
       };
 
       const activePadState = {};
 
-      // Get target Ruffle Element reliably
       function getPlayer() {
         return document.querySelector("ruffle-embed, ruffle-object, ruffle-player, #flash-container");
       }
 
-      // Auto-Hiding Control Bar logic
       let hideTimer;
       wrapper.addEventListener("mousemove", (e) => {
         const rect = wrapper.getBoundingClientRect();
@@ -452,7 +449,6 @@
       });
       wrapper.addEventListener("mouseleave", () => controlBar.classList.remove("visible"));
 
-      // Fullscreen & Theater Controls
       document.getElementById("fs-btn").addEventListener("click", () => {
         if (!document.fullscreenElement) wrapper.requestFullscreen();
         else document.exitFullscreen();
@@ -462,7 +458,6 @@
         document.body.classList.toggle("theater-mode");
       });
 
-      // Pause/Restart Buttons
       document.getElementById("play-pause-btn").addEventListener("click", (e) => {
         const player = getPlayer();
         if (!player) return;
@@ -487,48 +482,44 @@
         }
       });
 
-      // Modal Toggles
       document.getElementById("kb-btn").onclick = () => kbModal.classList.add("open");
       document.getElementById("close-kb").onclick = () => kbModal.classList.remove("open");
       document.getElementById("mapper-btn").onclick = () => mapperModal.classList.add("open");
       document.getElementById("close-mapper").onclick = () => mapperModal.classList.remove("open");
 
-      // Set key listening mode
       document.querySelectorAll(".bind-key").forEach(btn => {
         btn.addEventListener("click", (e) => {
           if (activeListeningBtn) activeListeningBtn.classList.remove("listening");
           activeListeningBtn = e.target;
           listeningType = btn.classList.contains("kb-bind") ? "kb" : "pad";
           activeListeningBtn.classList.add("listening");
-          activeListeningBtn.textContent = "Press Key...";
+          activeListeningBtn.textContent = "Press Input Key...";
         });
       });
 
-      // Capture Keyboard inputs for remapping
       window.addEventListener("keydown", (e) => {
         if (!activeListeningBtn) return;
 
         e.preventDefault();
-        const label = e.key === " " ? "Space" : e.key;
+        const displayLabel = e.key === " " ? "Space" : (e.key.length === 1 ? e.key.toUpperCase() : e.key);
 
         if (listeningType === "kb") {
-          const action = activeListeningBtn.getAttribute("data-action");
-          kbMap[action] = { key: e.key, code: e.code, keyCode: e.keyCode };
-          activeListeningBtn.textContent = label;
+          const targetKey = activeListeningBtn.getAttribute("data-target");
+          keyMap[targetKey] = { key: e.key, code: e.code, keyCode: e.keyCode };
+          activeListeningBtn.textContent = displayLabel;
         } else if (listeningType === "pad") {
           const padIdx = activeListeningBtn.getAttribute("data-pad-btn");
           controllerBinds[padIdx] = { key: e.key, code: e.code, keyCode: e.keyCode };
-          activeListeningBtn.textContent = label;
+          activeListeningBtn.textContent = displayLabel;
         }
 
         activeListeningBtn.classList.remove("listening");
         activeListeningBtn = null;
       });
 
-      // Dispatch Synthetic Keyboard Event directly to Ruffle
       function sendSyntheticKey(type, keyInfo) {
         const target = getPlayer();
-        if (!target) return;
+        if (!target || !keyInfo) return;
         target.dispatchEvent(new KeyboardEvent(type, {
           key: keyInfo.key,
           code: keyInfo.code,
@@ -538,15 +529,13 @@
         }));
       }
 
-      // Main Gamepad Polling Loop
       function gameLoop() {
         const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
         const gp = gamepads[0] || gamepads[1] || gamepads[2] || gamepads[3];
 
         if (gp) {
-          padStatus.textContent = `Connected: ${gp.id.substring(0, 32)}...`;
+          padStatus.textContent = `Connected: ${gp.id.substring(0, 30)}...`;
 
-          // Check Axis & D-Pad inputs
           const axisX = gp.axes[0];
           const axisY = gp.axes[1];
 
@@ -555,23 +544,21 @@
           const dUp    = (gp.buttons[12] && gp.buttons[12].pressed) || axisY < -0.5;
           const dDown  = (gp.buttons[13] && gp.buttons[13].pressed) || axisY > 0.5;
 
-          // Helper to process directional state toggles
-          const checkDirection = (stateKey, isPressed, bindTarget) => {
+          const handleDirection = (stateKey, isPressed, outputKeyInfo) => {
             if (isPressed && !activePadState[stateKey]) {
-              sendSyntheticKey('keydown', bindTarget);
+              sendSyntheticKey('keydown', outputKeyInfo);
               activePadState[stateKey] = true;
             } else if (!isPressed && activePadState[stateKey]) {
-              sendSyntheticKey('keyup', bindTarget);
+              sendSyntheticKey('keyup', outputKeyInfo);
               activePadState[stateKey] = false;
             }
           };
 
-          checkDirection('left',  dLeft,  kbMap.left);
-          checkDirection('right', dRight, kbMap.right);
-          checkDirection('up',    dUp,    kbMap.up);
-          checkDirection('down',  dDown,  kbMap.down);
+          handleDirection('d_left',  dLeft,  keyMap.ArrowLeft);
+          handleDirection('d_right', dRight, keyMap.ArrowRight);
+          handleDirection('d_up',    dUp,    keyMap.ArrowUp);
+          handleDirection('d_down',  dDown,  keyMap.ArrowDown);
 
-          // Dynamic Controller Button check loop
           Object.keys(controllerBinds).forEach(bIdx => {
             const pressed = gp.buttons[bIdx] && gp.buttons[bIdx].pressed;
             if (pressed && !activePadState[bIdx]) {
@@ -584,7 +571,7 @@
           });
 
         } else {
-          padStatus.textContent = "No controller detected. Press any button on your gamepad.";
+          padStatus.textContent = "No controller detected. Press any button on controller.";
         }
 
         requestAnimationFrame(gameLoop);
