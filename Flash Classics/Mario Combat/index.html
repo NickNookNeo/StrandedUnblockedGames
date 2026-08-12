@@ -14,18 +14,29 @@
       min-height: 100vh;
       margin: 0;
       background-color: #040427;
-      color: #972D07;
+      color: #ffffff;
     }
 
-    .player-container {
-      position: relative;
+    h1 {
+      color: #972D07;
+      margin-bottom: 15px;
+    }
+
+    .player-wrapper {
+      display: flex;
+      flex-direction: column;
       width: 90vw;
       max-width: 1280px;
-      aspect-ratio: 16 / 9;
       background-color: #000;
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .player-container {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background-color: #000;
     }
 
     #flash-container {
@@ -33,38 +44,50 @@
       height: 100%;
     }
 
-    .fullscreen-btn {
-      position: absolute;
-      bottom: 12px;
-      right: 12px;
-      z-index: 10;
-      padding: 8px 16px;
-      background-color: rgba(4, 4, 39, 0.85);
+    .control-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #0a0a3c;
+      padding: 10px 16px;
+      border-top: 1px solid #1a1a5c;
+    }
+
+    .control-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .control-btn {
+      padding: 6px 14px;
+      background-color: #1a1a5c;
       color: #ffffff;
       border: 1px solid #972D07;
       border-radius: 4px;
       cursor: pointer;
+      font-size: 13px;
       font-weight: bold;
       transition: background-color 0.2s, transform 0.1s;
     }
 
-    .fullscreen-btn:hover {
+    .control-btn:hover {
       background-color: #972D07;
     }
 
-    .fullscreen-btn:active {
+    .control-btn:active {
       transform: scale(0.95);
     }
 
-    .player-container:fullscreen {
+    .player-wrapper:fullscreen {
       width: 100vw;
       height: 100vh;
       max-width: none;
       border-radius: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #000;
+    }
+
+    .player-wrapper:fullscreen .player-container {
+      height: calc(100vh - 49px);
+      aspect-ratio: auto;
     }
   </style>
 
@@ -82,22 +105,45 @@
 
   <h1>Mario Combat</h1>
 
-  <div class="player-container" id="player-wrapper">
-    <object id="flash-container" type="application/x-shockwave-flash" data="Mario_Combat.swf">
-      <p>Unable to load Flash content.</p>
-    </object>
-    <button class="fullscreen-btn" id="fs-btn">Fullscreen</button>
+  <div class="player-wrapper" id="player-wrapper">
+    <div class="player-container">
+      <object id="flash-container" type="application/x-shockwave-flash" data="Mario_Combat.swf">
+        <p>Unable to load Flash content.</p>
+      </object>
+    </div>
+
+    <div class="control-bar">
+      <div class="control-group">
+        <button class="control-btn" id="play-pause-btn">Pause</button>
+        <button class="control-btn" id="reload-btn">Restart</button>
+      </div>
+      <div class="control-group">
+        <button class="control-btn" id="fs-btn">Fullscreen</button>
+      </div>
+    </div>
   </div>
 
   <script>
     window.RufflePlayer = window.RufflePlayer || {};
     window.addEventListener("DOMContentLoaded", () => {
-      const ruffle = window.RufflePlayer.newest();
-      const player = ruffle.createPlayer();
-      const container = document.getElementById("flash-container");
-      
       const wrapper = document.getElementById("player-wrapper");
       const fsBtn = document.getElementById("fs-btn");
+      const playPauseBtn = document.getElementById("play-pause-btn");
+      const reloadBtn = document.getElementById("reload-btn");
+
+      let isPaused = false;
+
+      function getRufflePlayer() {
+        const container = document.getElementById("flash-container");
+        if (container && typeof container.pause === "function") {
+          return container;
+        }
+        const ruffleElement = document.querySelector("ruffle-embed, ruffle-object");
+        if (ruffleElement && typeof ruffleElement.pause === "function") {
+          return ruffleElement;
+        }
+        return null;
+      }
 
       fsBtn.addEventListener("click", () => {
         if (!document.fullscreenElement) {
@@ -113,6 +159,39 @@
             document.exitFullscreen();
           }
         }
+      });
+
+      playPauseBtn.addEventListener("click", () => {
+        const player = getRufflePlayer();
+        if (!player) return;
+
+        if (!isPaused) {
+          player.pause();
+          isPaused = true;
+          playPauseBtn.textContent = "Play";
+        } else {
+          player.play();
+          isPaused = false;
+          playPauseBtn.textContent = "Pause";
+        }
+      });
+
+      reloadBtn.addEventListener("click", () => {
+        const player = getRufflePlayer();
+        if (!player) return;
+
+        if (typeof player.reload === "function") {
+          player.reload();
+        } else {
+          const container = document.getElementById("flash-container");
+          if (container) {
+            const currentData = container.getAttribute("data");
+            container.setAttribute("data", "");
+            container.setAttribute("data", currentData);
+          }
+        }
+        isPaused = false;
+        playPauseBtn.textContent = "Pause";
       });
     });
   </script>
