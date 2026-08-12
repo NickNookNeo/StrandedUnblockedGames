@@ -27,8 +27,8 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: var(--ambient-gradient);
-      background-attachment: fixed;
+      background: var(--ambient-gradient) !important;
+      background-attachment: fixed !important;
       color: var(--text-color);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       user-select: none;
@@ -43,7 +43,7 @@
       justify-content: flex-start;
     }
 
-    /* Header Layout */
+    /* Header Controls */
     .header-container {
       width: 100%;
       max-width: 960px;
@@ -110,7 +110,7 @@
       width: 100%;
     }
 
-    /* Player Container Wrapper */
+    /* Main Stage & Player Wrapper */
     .player-wrapper {
       position: relative;
       display: flex;
@@ -122,7 +122,7 @@
       flex: 1;
       min-height: 0;
       margin: 0 auto;
-      background: var(--ambient-gradient);
+      background: var(--ambient-gradient) !important;
       border-radius: 12px;
       overflow: hidden;
       border: 1px solid var(--border-color);
@@ -137,13 +137,35 @@
       align-items: center;
       position: relative;
       overflow: hidden;
+      background: transparent !important;
     }
 
-    /* Keep Ruffle flexible and responsive inside stage wrapper */
-    #flash-container, ruffle-embed, ruffle-object, ruffle-player {
+    /* --- Scaling Modes CSS Control --- */
+    .scale-fit ruffle-player,
+    .scale-fit #flash-container {
       width: 100% !important;
       height: 100% !important;
+    }
+
+    .scale-stretch ruffle-player,
+    .scale-stretch #flash-container {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* Original scale centers clean native canvas */
+    .scale-original ruffle-player,
+    .scale-original #flash-container {
+      width: 800px !important;
+      height: 600px !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
+      margin: auto !important;
+    }
+
+    #flash-container, ruffle-embed, ruffle-object, ruffle-player {
       display: block !important;
+      background: transparent !important;
     }
 
     .fps-counter {
@@ -181,7 +203,7 @@
       padding: 10px 16px;
       border-top: 1px solid var(--border-color);
       transform: translateY(100%);
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform 0.15s ease-out; /* Fast snappy animation */
       z-index: 50;
       pointer-events: auto;
     }
@@ -190,12 +212,13 @@
       transform: translateY(0);
     }
 
+    /* Generous hover activation radius */
     .hover-trigger-zone {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 40px;
+      height: 75px;
       z-index: 40;
       pointer-events: auto;
     }
@@ -377,8 +400,13 @@
       cursor: pointer;
     }
 
-    /* FULLSCREEN & BACKDROP FIX: Preserves Ambient Radial Gradient in Fullscreen */
+    /* FULLSCREEN & BACKDROP FIX: Preserves Ambient Radial Gradient in Fullscreen Mode */
     ::backdrop {
+      background: var(--ambient-gradient) !important;
+    }
+
+    :fullscreen,
+    :-webkit-full-screen {
       background: var(--ambient-gradient) !important;
     }
 
@@ -421,7 +449,7 @@
       "letterbox": "on",
       "forceScale": true,
       "forceAlign": true,
-      "wmode": "opaque"
+      "wmode": "transparent"
     };
   </script>
 </head>
@@ -444,9 +472,10 @@
   <div class="player-wrapper" id="player-wrapper" tabindex="0">
     <div class="fps-counter" id="fps-counter">FPS: 00</div>
     
-    <div class="player-container" id="player-container">
+    <div class="player-container scale-fit" id="player-container">
       <object id="flash-container" type="application/x-shockwave-flash" data="cactusmccoy.swf">
         <param name="scale" value="showAll" />
+        <param name="wmode" value="transparent" />
         <p>Unable to load Flash content.</p>
       </object>
     </div>
@@ -505,6 +534,7 @@
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       const wrapper = document.getElementById("player-wrapper");
+      const playerContainer = document.getElementById("player-container");
       const controlBar = document.getElementById("control-bar");
       const hoverZone = document.getElementById("hover-trigger-zone");
       const fsBtn = document.getElementById("fs-btn");
@@ -513,21 +543,15 @@
 
       const playPauseBtn = document.getElementById("play-pause-btn");
       const reloadBtn = document.getElementById("reload-btn");
-      const fpsBtn = document.getElementById("fps-btn");
-      const fpsCounter = document.getElementById("fps-counter");
-
-      const mapperBtn = document.getElementById("mapper-btn");
-      const mapperModal = document.getElementById("mapper-modal");
-      const closeModal = document.getElementById("close-modal");
-      const gamepadStatus = document.getElementById("gamepad-status");
-      const mapperList = document.getElementById("mapper-list");
-      const resetBindsBtn = document.getElementById("reset-binds-btn");
 
       const kbBtn = document.getElementById("kb-btn");
       const kbModal = document.getElementById("kb-modal");
       const closeKbModal = document.getElementById("close-kb-modal");
       const kbList = document.getElementById("kb-list");
       const resetKbBtn = document.getElementById("reset-kb-btn");
+
+      const mapperModal = document.getElementById("mapper-modal");
+      const closeModal = document.getElementById("close-modal");
 
       const muteBtn = document.getElementById("mute-btn");
       const volumeSlider = document.getElementById("volume-slider");
@@ -536,9 +560,9 @@
       let previousVolume = 1;
 
       const scaleModes = [
-        { name: "Scale: Fit", scale: "showAll", letterbox: "on" },
-        { name: "Scale: Stretch", scale: "exactFit", letterbox: "off" },
-        { name: "Scale: Original", scale: "noScale", letterbox: "off" }
+        { name: "Scale: Fit", class: "scale-fit", scale: "showAll", letterbox: "on" },
+        { name: "Scale: Stretch", class: "scale-stretch", scale: "exactFit", letterbox: "off" },
+        { name: "Scale: Original", class: "scale-original", scale: "noScale", letterbox: "off" }
       ];
       let currentScaleIdx = 0;
 
@@ -549,6 +573,9 @@
       }
 
       function applyScaleMode(mode) {
+        playerContainer.classList.remove("scale-fit", "scale-stretch", "scale-original");
+        playerContainer.classList.add(mode.class);
+
         const player = getRufflePlayer();
         if (player) {
           if (!player.config) player.config = {};
@@ -558,7 +585,6 @@
           player.setAttribute("scale", mode.scale);
           player.setAttribute("letterbox", mode.letterbox);
 
-          // Trigger internal reflow on Shadow DOM
           window.dispatchEvent(new Event("resize"));
         }
       }
@@ -571,7 +597,7 @@
         applyScaleMode(mode);
       });
 
-      /* Reliable Hover Control Bar */
+      /* Quick Snappy Control Bar Triggering */
       let hideTimeout = null;
 
       function showControlBar() {
@@ -582,7 +608,7 @@
       function hideControlBar() {
         hideTimeout = setTimeout(() => {
           controlBar.classList.remove("visible");
-        }, 300);
+        }, 200);
       }
 
       hoverZone.addEventListener("mouseenter", showControlBar);
@@ -592,7 +618,7 @@
 
       wrapper.addEventListener("mousemove", (e) => {
         const rect = wrapper.getBoundingClientRect();
-        if (e.clientY >= rect.bottom - 50) {
+        if (e.clientY >= rect.bottom - 80) {
           showControlBar();
         }
       });
@@ -629,7 +655,7 @@
         }, 100);
       });
 
-      /* Volume & Control Bar Operations */
+      /* Audio & Game Controls */
       function updateVolume(val) {
         const player = getRufflePlayer();
         if (player) player.volume = val;
@@ -682,66 +708,17 @@
         playPauseBtn.textContent = "Pause";
       });
 
-      /* Keyboard & Gamepad Modal Logic */
-      const defaultKbBinds = [
-        { label: "Action / Jump", targetKey: "Space", mappedCode: "Space", mappedKey: " " },
-        { label: "Attack / Primary", targetKey: "X", mappedCode: "KeyX", mappedKey: "x" },
-        { label: "Special / Secondary", targetKey: "Z", mappedCode: "KeyZ", mappedKey: "z" },
-        { label: "Up", targetKey: "ArrowUp", mappedCode: "ArrowUp", mappedKey: "ArrowUp" },
-        { label: "Down", targetKey: "ArrowDown", mappedCode: "ArrowDown", mappedKey: "ArrowDown" },
-        { label: "Left", targetKey: "ArrowLeft", mappedCode: "ArrowLeft", mappedKey: "ArrowLeft" },
-        { label: "Right", targetKey: "ArrowRight", mappedCode: "ArrowRight", mappedKey: "ArrowRight" }
-      ];
-
-      let kbBinds = JSON.parse(localStorage.getItem("flash_kb_binds")) || JSON.parse(JSON.stringify(defaultKbBinds));
-      let kbListeningIndex = -1;
-
-      function renderKbMapperUI() {
-        kbList.innerHTML = "";
-        kbBinds.forEach((bind, idx) => {
-          const row = document.createElement("div");
-          row.className = "mapper-row";
-          row.innerHTML = `
-            <span style="font-size: 0.8rem;">${bind.label}</span>
-            <button class="bind-btn ${kbListeningIndex === idx ? 'listening' : ''}" data-kb-idx="${idx}">
-              ${kbListeningIndex === idx ? 'Press Key...' : (bind.mappedKey === ' ' ? 'Space' : bind.mappedKey.toUpperCase())}
-            </button>
-          `;
-          kbList.appendChild(row);
-        });
-
-        document.querySelectorAll("[data-kb-idx]").forEach(btn => {
-          btn.addEventListener("click", (e) => {
-            kbListeningIndex = parseInt(e.target.getAttribute("data-kb-idx"));
-            renderKbMapperUI();
-          });
-        });
-      }
-
-      resetKbBtn.addEventListener("click", () => {
-        kbBinds = JSON.parse(JSON.stringify(defaultKbBinds));
-        localStorage.removeItem("flash_kb_binds");
-        kbListeningIndex = -1;
-        renderKbMapperUI();
+      /* Modal Event Listeners */
+      closeModal.addEventListener("click", () => {
+        mapperModal.classList.remove("open");
       });
 
       kbBtn.addEventListener("click", () => {
-        renderKbMapperUI();
         kbModal.classList.add("open");
       });
 
       closeKbModal.addEventListener("click", () => {
         kbModal.classList.remove("open");
-        kbListeningIndex = -1;
-      });
-
-      kbBtn.addEventListener("click", () => {
-        renderKbMapperUI();
-        kbModal.classList.add("open");
-      });
-
-      closeModal.addEventListener("click", () => {
-        mapperModal.classList.remove("open");
       });
     });
   </script>
