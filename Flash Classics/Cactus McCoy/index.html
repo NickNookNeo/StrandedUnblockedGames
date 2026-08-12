@@ -25,7 +25,7 @@
       height: 100%;
       margin: 0;
       padding: 0;
-      overflow-x: hidden;
+      overflow: hidden; /* Prevents scrollbars globally */
     }
 
     body {
@@ -33,12 +33,11 @@
       background: radial-gradient(circle at center, #1e293b 0%, #050811 100%);
       background-attachment: fixed;
       color: var(--text-color);
-      padding: 1rem;
+      padding: 0.75rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      min-height: 100vh;
       user-select: none;
       -webkit-user-select: none;
     }
@@ -49,8 +48,9 @@
       max-width: 960px;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      flex-shrink: 0;
     }
 
     .header-top {
@@ -84,7 +84,7 @@
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       font-weight: 800;
       margin: 0;
       text-transform: uppercase;
@@ -118,6 +118,8 @@
       justify-content: center;
       width: 100%;
       max-width: 960px;
+      flex: 1;
+      min-height: 0; /* Important for flex container scaling */
       margin: 0 auto;
       background: #000;
       border-radius: 12px;
@@ -138,13 +140,14 @@
       position: relative;
     }
 
+    /* Fixed stretch behavior */
     .player-container.no-ratio {
       aspect-ratio: unset !important;
-      height: 600px;
-      max-height: 70vh;
+      width: 100% !important;
+      height: 100% !important;
     }
 
-    /* Ruffle Canvas & Embed Stretching Fix */
+    /* Ruffle Canvas & Embed Stretching Fixes */
     #flash-container, ruffle-embed, ruffle-object, ruffle-player {
       width: 100% !important;
       height: 100% !important;
@@ -152,6 +155,8 @@
       max-height: 100% !important;
       display: block !important;
       background: transparent !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
 
     .fps-counter {
@@ -402,8 +407,9 @@
       max-height: 100vh !important;
     }
 
-    /* Strict Fullscreen Container Rules (Eliminating Overscan) */
-    .player-wrapper:fullscreen {
+    /* Strict Fullscreen Container & Shadow DOM Locks */
+    .player-wrapper:fullscreen,
+    .player-wrapper:-webkit-full-screen {
       width: 100vw !important;
       height: 100vh !important;
       max-width: 100vw !important;
@@ -413,13 +419,19 @@
       margin: 0 !important;
       padding: 0 !important;
       background: #000 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
     }
 
-    .player-wrapper:fullscreen .player-container {
+    .player-wrapper:fullscreen .player-container,
+    .player-wrapper:-webkit-full-screen .player-container {
       width: 100% !important;
       height: 100% !important;
       max-width: 100vw !important;
       max-height: 100vh !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
   </style>
 
@@ -430,8 +442,8 @@
       "clip": true,
       "scale": "showAll",
       "letterbox": "off",
-      "backgroundColor": null,
-      "wmode": "transparent"
+      "backgroundColor": "#000000",
+      "wmode": "window"
     };
   </script>
 </head>
@@ -541,13 +553,34 @@
       let isRatioApplied = false;
       let previousVolume = 1;
 
-      // Corrected scaling modes with hard scale dispatching
       const scaleModes = [
         { name: "Scale: Fit", value: "showAll", useRatio: true },
         { name: "Scale: Stretch", value: "exactFit", useRatio: false },
         { name: "Scale: Original", value: "noScale", useRatio: true }
       ];
       let currentScaleIdx = 0;
+
+      function forceRuffleScale(scaleValue) {
+        const player = getRufflePlayer();
+        if (!player) return;
+
+        player.setAttribute("scale", scaleValue);
+        if (player.config) player.config.scale = scaleValue;
+
+        const shadowRoot = player.shadowRoot || player;
+        const canvas = shadowRoot.querySelector("canvas");
+        
+        if (canvas) {
+          canvas.style.width = "100%";
+          canvas.style.height = "100%";
+          canvas.style.top = "0";
+          canvas.style.left = "0";
+          canvas.style.position = "absolute";
+        }
+
+        // Trigger resize events so Ruffle recalculates matrices properly
+        window.dispatchEvent(new Event("resize"));
+      }
 
       scaleBtn.addEventListener("click", () => {
         scaleBtn.blur();
@@ -561,28 +594,23 @@
           playerContainer.classList.add("no-ratio");
         }
 
-        const player = getRufflePlayer();
-        if (player) {
-          player.setAttribute("scale", currentMode.value);
-          
-          // Force internal Shadow DOM canvas resizing
-          const shadowRoot = player.shadowRoot || player;
-          const canvas = shadowRoot.querySelector("canvas");
-          if (canvas) {
-            canvas.style.width = "100%";
-            canvas.style.height = "100%";
-          }
-          
-          // Fire global window resize to notify Ruffle's Wasm runtime
-          window.dispatchEvent(new Event("resize"));
-        }
+        forceRuffleScale(currentMode.value);
       });
 
       theaterBtn.addEventListener("click", () => {
         theaterBtn.blur();
         document.body.classList.toggle("theater-mode");
         theaterBtn.style.color = document.body.classList.contains("theater-mode") ? "var(--accent-color)" : "var(--text-color)";
-        window.dispatchEvent(new Event("resize"));
+        setTimeout(() => {
+          window.dispatchEvent(new Event("resize"));
+        }, 50);
+      });
+
+      document.addEventListener("fullscreenchange", () => {
+        const currentMode = scaleModes[currentScaleIdx];
+        setTimeout(() => {
+          forceRuffleScale(currentMode.value);
+        }, 100);
       });
 
       let fpsActive = false;
@@ -871,7 +899,7 @@
         const player = getRufflePlayer();
         if (player) player.volume = val;
         volumeSlider.value = val;
-        muteBtn.textContent = val == 0 ? "🔇" : (val < 0.5 ? "🔉" : "🔊");
+        muteBtn.textContent = val == 0 ? "🔇" : (val < 0.5 ? "Dis" : "🔊");
       }
 
       volumeSlider.addEventListener("input", (e) => {
