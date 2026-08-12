@@ -106,7 +106,6 @@
       background: transparent !important;
     }
 
-    /* CONTROL BAR ANIMATION SETTINGS */
     .control-bar {
       position: absolute;
       bottom: 0;
@@ -121,8 +120,8 @@
       border-top: 1px solid var(--border-color);
       transform: translateY(100%);
       
-      /* Hidden state: Slower 0.6s exit animation with a brief 0.15s pause before starting */
-      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
+      /* Exit timing: Smooth slide out */
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
       z-index: 30;
       pointer-events: none;
     }
@@ -131,8 +130,8 @@
       transform: translateY(0);
       pointer-events: auto;
       
-      /* Visible state: Smooth 0.5s entrance without initial delay */
-      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0s;
+      /* Entrance timing: Requires a intentional 150ms hover at the bottom edge before sliding in */
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
     }
 
     .control-group {
@@ -300,11 +299,12 @@
         }
       }
 
-      // Pure CSS-driven trigger logic
       document.addEventListener("mousemove", (e) => {
         const wrapperBounds = wrapper.getBoundingClientRect();
         const barBounds = controlBar.getBoundingClientRect();
-        const triggerZoneHeight = 28;
+        
+        // Strict 10px activation zone at the very bottom edge
+        const triggerZoneHeight = 10;
 
         const distanceToBottom = wrapperBounds.bottom - e.clientY;
         const isXInside = e.clientX >= wrapperBounds.left && e.clientX <= wrapperBounds.right;
