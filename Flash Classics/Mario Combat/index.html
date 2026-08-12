@@ -145,6 +145,24 @@
         return null;
       }
 
+      function syncState() {
+        const player = getRufflePlayer();
+        if (!player) return;
+
+        if (typeof player.isPlaying === "function") {
+          const currentlyPlaying = player.isPlaying();
+          if (currentlyPlaying && isPaused) {
+            isPaused = false;
+            playPauseBtn.textContent = "Pause";
+          } else if (!currentlyPlaying && !isPaused) {
+            isPaused = true;
+            playPauseBtn.textContent = "Play";
+          }
+        }
+      }
+
+      setInterval(syncState, 200);
+
       fsBtn.addEventListener("click", () => {
         if (!document.fullscreenElement) {
           if (wrapper.requestFullscreen) {
