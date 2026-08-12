@@ -30,17 +30,15 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       min-height: 100vh;
       user-select: none;
       -webkit-user-select: none;
-      transition: padding 0.3s ease;
     }
 
-    /* Distributed Header Container */
+    /* Fluid Header Container */
     .header-container {
       width: 100%;
-      max-width: 800px;
+      max-width: 1100px; /* Expanded limit for true responsiveness */
       display: flex;
       flex-direction: column;
       gap: 1rem;
@@ -49,9 +47,11 @@
     }
 
     .header-top {
-      display: grid;
-      grid-template-columns: 140px 1fr 140px;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
+      position: relative;
+      width: 100%;
     }
 
     .back-btn {
@@ -65,7 +65,7 @@
       font-weight: 600;
       border: 1px solid var(--border-color);
       transition: background-color 0.2s, color 0.2s;
-      justify-self: start;
+      z-index: 10;
     }
 
     .back-btn:hover {
@@ -74,21 +74,27 @@
     }
 
     h1.game-title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
       font-size: 2rem;
       font-weight: 800;
       margin: 0;
       text-transform: uppercase;
       letter-spacing: 3px;
       text-align: center;
-      grid-column: 2;
       white-space: nowrap;
       background: linear-gradient(135deg, #ffffff 0%, var(--accent-color) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       text-shadow: 0 4px 20px var(--accent-glow);
+      pointer-events: none;
     }
 
-    /* Sub-header Action Ribbon */
+    .header-right-spacer {
+      width: 100px; /* Balances out back button layout */
+    }
+
     .header-controls {
       display: flex;
       justify-content: center;
@@ -96,7 +102,7 @@
       width: 100%;
     }
 
-    /* Player Shell */
+    /* Fluid Player Shell */
     .player-wrapper {
       position: relative;
       display: flex;
@@ -104,20 +110,18 @@
       align-items: center;
       justify-content: center;
       width: 100%;
-      max-width: 800px;
-      min-height: 450px;
+      max-width: 1100px; /* Allows the container to scale fluidly with wider screens */
       margin: 0 auto;
       background: radial-gradient(circle at center, #1e293b 0%, #050811 100%);
       border-radius: 12px;
       overflow: hidden;
       border: 1px solid var(--border-color);
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(56, 189, 248, 0.05);
-      transition: max-width 0.3s ease, width 0.3s ease;
     }
 
     .player-container {
       width: 100%;
-      height: 100%;
+      height: auto;
       aspect-ratio: 4 / 3;
       background: transparent;
       display: flex;
@@ -127,10 +131,9 @@
       position: relative;
     }
 
-    /* Disable aspect ratio restriction when stretching */
     .player-container.no-ratio {
       aspect-ratio: unset !important;
-      height: 450px;
+      height: 70vh; /* Fills vertical space dynamically on stretch/original modes */
     }
 
     #flash-container, ruffle-embed, ruffle-object, ruffle-player {
@@ -142,7 +145,6 @@
       background: transparent !important;
     }
 
-    /* FPS Counter */
     .fps-counter {
       position: absolute;
       top: 10px;
@@ -164,7 +166,6 @@
       display: block;
     }
 
-    /* Clean Overlay Controls Bar */
     .control-bar {
       position: absolute;
       bottom: 0;
@@ -215,10 +216,6 @@
       transform: scale(0.95);
     }
 
-    .control-btn:focus {
-      outline: none;
-    }
-
     .volume-container {
       display: flex;
       align-items: center;
@@ -241,11 +238,6 @@
       cursor: pointer;
       font-size: 0.95rem;
       border-radius: 4px;
-      transition: background-color 0.2s;
-    }
-
-    .mute-btn:hover {
-      background-color: rgba(255, 255, 255, 0.08);
     }
 
     .volume-slider {
@@ -257,7 +249,6 @@
       background: rgba(255, 255, 255, 0.2);
       outline: none;
       cursor: pointer;
-      transition: background 0.2s;
     }
 
     .volume-slider::-webkit-slider-thumb {
@@ -268,14 +259,8 @@
       border-radius: 50%;
       background: var(--accent-color);
       cursor: pointer;
-      transition: transform 0.1s ease;
     }
 
-    .volume-slider::-webkit-slider-thumb:hover {
-      transform: scale(1.2);
-    }
-
-    /* Modal Overlay Styling */
     .modal-overlay {
       position: absolute;
       inset: 0;
@@ -336,7 +321,6 @@
       gap: 8px;
       max-height: 250px;
       overflow-y: auto;
-      padding-right: 4px;
     }
 
     .mapper-row {
@@ -384,21 +368,13 @@
       font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.2s, border-color 0.2s;
-    }
-
-    .reset-btn:hover {
-      background-color: rgba(239, 68, 68, 0.2);
-      border-color: var(--danger-color);
     }
 
     .reset-btn.confirm-state {
       background-color: var(--danger-color);
       color: #fff;
-      font-weight: bold;
     }
 
-    /* Theater Mode */
     body.theater-mode {
       padding: 0;
     }
@@ -415,7 +391,6 @@
       border: none;
     }
 
-    /* Fullscreen Mode */
     .player-wrapper:fullscreen {
       width: 100vw !important;
       height: 100vh !important;
@@ -424,18 +399,6 @@
       border-radius: 0 !important;
       border: none !important;
       margin: 0 !important;
-      background: radial-gradient(circle at center, #1e293b 0%, #050811 100%) !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-    }
-
-    .player-wrapper:fullscreen .player-container {
-      max-width: 100vw !important;
-      max-height: 100vh !important;
-      width: auto !important;
-      height: 100% !important;
-      background: transparent !important;
     }
   </style>
 
@@ -457,10 +420,9 @@
     <div class="header-top">
       <a href="../index.html" class="back-btn">&larr; Games List</a>
       <h1 class="game-title">Cactus McCoy</h1>
-      <div></div>
+      <div class="header-right-spacer"></div>
     </div>
     
-    <!-- Top action strip to free up bottom bar clutter -->
     <div class="header-controls">
       <button class="control-btn" id="scale-btn">Scale: Fit</button>
       <button class="control-btn" id="kb-btn">Keyboard Binds</button>
@@ -494,7 +456,7 @@
       </div>
     </div>
 
-    <!-- Controller Mapper Modal -->
+    <!-- Controller Modal -->
     <div class="modal-overlay" id="mapper-modal">
       <div class="modal-card">
         <div class="modal-header">
@@ -509,7 +471,7 @@
       </div>
     </div>
 
-    <!-- Keyboard Rebind Modal -->
+    <!-- Keyboard Modal -->
     <div class="modal-overlay" id="kb-modal">
       <div class="modal-card">
         <div class="modal-header">
@@ -523,7 +485,6 @@
         </div>
       </div>
     </div>
-
   </div>
 
   <script>
@@ -539,7 +500,6 @@
       const fpsCounter = document.getElementById("fps-counter");
       const scaleBtn = document.getElementById("scale-btn");
 
-      // Modals & Buttons
       const mapperBtn = document.getElementById("mapper-btn");
       const mapperModal = document.getElementById("mapper-modal");
       const closeModal = document.getElementById("close-modal");
@@ -560,7 +520,7 @@
       let isRatioApplied = false;
       let previousVolume = 1;
 
-      // Realtime Scaling Toggle Handler
+      // Corrected scaling modes with proper Ruffle attribute refresh triggers
       const scaleModes = [
         { name: "Scale: Fit", value: "showAll", useRatio: true },
         { name: "Scale: Stretch", value: "exactFit", useRatio: false },
@@ -574,31 +534,28 @@
         const currentMode = scaleModes[currentScaleIdx];
         scaleBtn.textContent = currentMode.name;
 
-        // Toggle ratio CSS depending on mode
         if (currentMode.useRatio) {
           playerContainer.classList.remove("no-ratio");
         } else {
           playerContainer.classList.add("no-ratio");
         }
 
-        // Force dynamic update on active Ruffle instance
         const player = getRufflePlayer();
         if (player) {
           player.setAttribute("scale", currentMode.value);
-          if (typeof player.requestAnimationFrame === "function") {
-            player.requestAnimationFrame(() => {});
-          }
+          // Force layout reflow trick so Ruffle recalculates dimensions immediately
+          player.style.display = "none";
+          player.offsetHeight; 
+          player.style.display = "block";
         }
       });
 
-      // Theater Mode Toggle
       theaterBtn.addEventListener("click", () => {
         theaterBtn.blur();
         document.body.classList.toggle("theater-mode");
         theaterBtn.style.color = document.body.classList.contains("theater-mode") ? "var(--accent-color)" : "var(--text-color)";
       });
 
-      // FPS Logic
       let fpsActive = false;
       let realGameFrames = 0;
       let fpsIntervalId = null;
@@ -606,20 +563,15 @@
       function hookRuffleLoop() {
         const ruffleTag = document.querySelector("ruffle-embed, ruffle-object, ruffle-player");
         if (!ruffleTag) return;
-
         const shadowRoot = ruffleTag.shadowRoot || ruffleTag;
         const canvas = shadowRoot.querySelector("canvas");
-
         if (!canvas) {
           setTimeout(hookRuffleLoop, 200);
           return;
         }
-
         const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
-
         if (gl && !canvas.dataset.fpsHooked) {
           canvas.dataset.fpsHooked = "true";
-
           const origClear = gl.clear.bind(gl);
           gl.clear = function(...args) {
             if (fpsActive) realGameFrames++;
@@ -650,7 +602,6 @@
         }
       });
 
-      // Keyboard Rebinding Logic
       const defaultKbBinds = [
         { label: "Action / Jump", targetKey: "Space", mappedCode: "Space", mappedKey: " " },
         { label: "Attack / Primary", targetKey: "X", mappedCode: "KeyX", mappedKey: "x" },
@@ -714,8 +665,6 @@
           return;
         }
 
-        if (listeningIndex !== -1) return;
-
         const mapped = kbBinds.find(b => b.mappedCode === e.code);
         if (mapped && mapped.mappedKey !== mapped.targetKey) {
           e.stopImmediatePropagation();
@@ -731,7 +680,6 @@
         }
       }, true);
 
-      // Gamepad Mapping Logic
       const defaultBinds = [
         { label: "Button A (Jump/Action)", padIndex: 0, key: "Space", code: "Space" },
         { label: "Button B (Attack/Cancel)", padIndex: 1, key: "x", code: "KeyX" },
@@ -790,17 +738,6 @@
         }
       });
 
-      window.addEventListener("keydown", (e) => {
-        if (listeningIndex !== -1) {
-          e.preventDefault();
-          binds[listeningIndex].key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-          binds[listeningIndex].code = e.code;
-          localStorage.setItem("flash_gamepad_binds", JSON.stringify(binds));
-          listeningIndex = -1;
-          renderMapperUI();
-        }
-      });
-
       mapperBtn.addEventListener("click", () => {
         resetConfirmState();
         renderMapperUI();
@@ -835,10 +772,8 @@
 
         if (activePad) {
           gamepadStatus.textContent = `Active: ${activePad.id.split('(')[0]}`;
-          
           binds.forEach(bind => {
             let isPressed = false;
-            
             if (bind.padIndex !== undefined && activePad.buttons[bind.padIndex]) {
               isPressed = activePad.buttons[bind.padIndex].pressed;
             } else if (bind.axisOrButton) {
@@ -861,7 +796,6 @@
         } else {
           gamepadStatus.textContent = "No Gamepad Detected. Connect or press any button.";
         }
-
         requestAnimationFrame(pollGamepad);
       }
       requestAnimationFrame(pollGamepad);
@@ -869,11 +803,8 @@
       function getRufflePlayer() {
         const obj = document.getElementById("flash-container");
         if (obj && (typeof obj.pause === "function" || obj.metadata || obj.shadowRoot)) return obj;
-
         const ruffleTag = document.querySelector("ruffle-embed, ruffle-object, ruffle-player");
-        if (ruffleTag) return ruffleTag;
-
-        return null;
+        return ruffleTag || null;
       }
 
       function setDynamicAspectRatio(width, height) {
@@ -888,11 +819,6 @@
           const meta = player.metadata || (player.ruffle && player.ruffle().metadata);
           if (meta && meta.width && meta.height) {
             setDynamicAspectRatio(meta.width, meta.height);
-          } else if (typeof player.addEventListener === "function") {
-            player.addEventListener("loadedmetadata", () => {
-              const loadedMeta = player.metadata || (player.ruffle && player.ruffle().metadata);
-              if (loadedMeta) setDynamicAspectRatio(loadedMeta.width, loadedMeta.height);
-            });
           }
         }
       };
@@ -906,34 +832,17 @@
 
       function toggleFullscreen() {
         if (!document.fullscreenElement) {
-          if (wrapper.requestFullscreen) {
-            wrapper.requestFullscreen();
-          } else if (wrapper.webkitRequestFullscreen) {
-            wrapper.webkitRequestFullscreen();
-          } else if (wrapper.msRequestFullscreen) {
-            wrapper.msRequestFullscreen();
-          }
+          if (wrapper.requestFullscreen) wrapper.requestFullscreen();
         } else {
-          if (document.exitFullscreen) {
-            document.exitFullscreen();
-          }
+          if (document.exitFullscreen) document.exitFullscreen();
         }
       }
 
       function updateVolume(val) {
         const player = getRufflePlayer();
-        if (player) {
-          player.volume = val;
-        }
+        if (player) player.volume = val;
         volumeSlider.value = val;
-
-        if (val == 0) {
-          muteBtn.textContent = "🔇";
-        } else if (val < 0.5) {
-          muteBtn.textContent = "🔉";
-        } else {
-          muteBtn.textContent = "🔊";
-        }
+        muteBtn.textContent = val == 0 ? "🔇" : (val < 0.5 ? "🔉" : "🔊");
       }
 
       volumeSlider.addEventListener("input", (e) => {
@@ -956,10 +865,8 @@
         const wrapperBounds = wrapper.getBoundingClientRect();
         const barBounds = controlBar.getBoundingClientRect();
         const triggerZoneHeight = 10;
-
         const distanceToBottom = wrapperBounds.bottom - e.clientY;
         const isXInside = e.clientX >= wrapperBounds.left && e.clientX <= wrapperBounds.right;
-        
         const isHoveringBar = e.clientX >= barBounds.left && e.clientX <= barBounds.right &&
                               e.clientY >= barBounds.top && e.clientY <= barBounds.bottom;
 
@@ -972,13 +879,6 @@
 
       wrapper.addEventListener("mouseleave", () => controlBar.classList.remove("visible"));
       window.addEventListener("mouseleave", () => controlBar.classList.remove("visible"));
-
-      playerContainer.addEventListener("click", () => {
-        if (isPaused) {
-          isPaused = false;
-          playPauseBtn.textContent = "Pause";
-        }
-      });
 
       playPauseBtn.addEventListener("click", (e) => {
         e.stopPropagation();
