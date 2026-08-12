@@ -131,8 +131,6 @@
       const playPauseBtn = document.getElementById("play-pause-btn");
       const reloadBtn = document.getElementById("reload-btn");
 
-      let isPaused = false;
-
       function getRufflePlayer() {
         const container = document.getElementById("flash-container");
         if (container && typeof container.pause === "function") {
@@ -149,19 +147,24 @@
         const player = getRufflePlayer();
         if (!player) return;
 
+        let currentlyPlaying = true;
         if (typeof player.isPlaying === "function") {
-          const currentlyPlaying = player.isPlaying();
-          if (currentlyPlaying && isPaused) {
-            isPaused = false;
-            playPauseBtn.textContent = "Pause";
-          } else if (!currentlyPlaying && !isPaused) {
-            isPaused = true;
-            playPauseBtn.textContent = "Play";
+          currentlyPlaying = player.isPlaying();
+        } else if (player.shadowRoot) {
+          const overlay = player.shadowRoot.querySelector("#play-overlay");
+          if (overlay && overlay.style.display !== "none") {
+            currentlyPlaying = false;
           }
+        }
+
+        if (currentlyPlaying) {
+          playPauseBtn.textContent = "Pause";
+        } else {
+          playPauseBtn.textContent = "Play";
         }
       }
 
-      setInterval(syncState, 200);
+      setInterval(syncState, 100);
 
       fsBtn.addEventListener("click", () => {
         if (!document.fullscreenElement) {
@@ -183,13 +186,21 @@
         const player = getRufflePlayer();
         if (!player) return;
 
-        if (!isPaused) {
+        let currentlyPlaying = true;
+        if (typeof player.isPlaying === "function") {
+          currentlyPlaying = player.isPlaying();
+        } else if (player.shadowRoot) {
+          const overlay = player.shadowRoot.querySelector("#play-overlay");
+          if (overlay && overlay.style.display !== "none") {
+            currentlyPlaying = false;
+          }
+        }
+
+        if (currentlyPlaying) {
           player.pause();
-          isPaused = true;
           playPauseBtn.textContent = "Play";
         } else {
           player.play();
-          isPaused = false;
           playPauseBtn.textContent = "Pause";
         }
       });
@@ -208,7 +219,6 @@
             container.setAttribute("data", currentData);
           }
         }
-        isPaused = false;
         playPauseBtn.textContent = "Pause";
       });
     });
