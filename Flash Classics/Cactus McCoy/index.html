@@ -106,6 +106,7 @@
       background: transparent !important;
     }
 
+    /* CONTROL BAR ANIMATION SETTINGS */
     .control-bar {
       position: absolute;
       bottom: 0;
@@ -119,7 +120,9 @@
       padding: 12px 20px;
       border-top: 1px solid var(--border-color);
       transform: translateY(100%);
-      transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+      
+      /* Hidden state: Slower 0.6s exit animation with a brief 0.15s pause before starting */
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
       z-index: 30;
       pointer-events: none;
     }
@@ -127,6 +130,9 @@
     .control-bar.visible {
       transform: translateY(0);
       pointer-events: auto;
+      
+      /* Visible state: Smooth 0.5s entrance without initial delay */
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0s;
     }
 
     .control-group {
@@ -239,9 +245,6 @@
       let isPaused = false;
       let isRatioApplied = false;
 
-      let showTimer = null;
-      let hideTimer = null;
-
       function getRufflePlayer() {
         const obj = document.getElementById("flash-container");
         if (obj && (typeof obj.pause === "function" || obj.metadata || obj.shadowRoot)) return obj;
@@ -281,28 +284,6 @@
 
       setTimeout(() => clearInterval(metaInterval), 5000);
 
-      function showBar() {
-        clearTimeout(hideTimer);
-        hideTimer = null;
-        if (!showTimer && !controlBar.classList.contains("visible")) {
-          showTimer = setTimeout(() => {
-            controlBar.classList.add("visible");
-            showTimer = null;
-          }, 100); // Tiny activation buffer
-        }
-      }
-
-      function hideBar() {
-        clearTimeout(showTimer);
-        showTimer = null;
-        if (!hideTimer && controlBar.classList.contains("visible")) {
-          hideTimer = setTimeout(() => {
-            controlBar.classList.remove("visible");
-            hideTimer = null;
-          }, 300); // Cooldown buffer before hiding
-        }
-      }
-
       function toggleFullscreen() {
         if (!document.fullscreenElement) {
           if (wrapper.requestFullscreen) {
@@ -319,10 +300,11 @@
         }
       }
 
+      // Pure CSS-driven trigger logic
       document.addEventListener("mousemove", (e) => {
         const wrapperBounds = wrapper.getBoundingClientRect();
         const barBounds = controlBar.getBoundingClientRect();
-        const triggerZoneHeight = 24;
+        const triggerZoneHeight = 28;
 
         const distanceToBottom = wrapperBounds.bottom - e.clientY;
         const isXInside = e.clientX >= wrapperBounds.left && e.clientX <= wrapperBounds.right;
@@ -331,14 +313,14 @@
                               e.clientY >= barBounds.top && e.clientY <= barBounds.bottom;
 
         if ((isXInside && distanceToBottom >= 0 && distanceToBottom <= triggerZoneHeight) || isHoveringBar) {
-          showBar();
+          controlBar.classList.add("visible");
         } else {
-          hideBar();
+          controlBar.classList.remove("visible");
         }
       });
 
-      wrapper.addEventListener("mouseleave", hideBar);
-      window.addEventListener("mouseleave", hideBar);
+      wrapper.addEventListener("mouseleave", () => controlBar.classList.remove("visible"));
+      window.addEventListener("mouseleave", () => controlBar.classList.remove("visible"));
 
       playerContainer.addEventListener("click", () => {
         if (isPaused) {
