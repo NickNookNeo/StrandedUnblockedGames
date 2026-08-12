@@ -112,7 +112,7 @@
       padding: 12px 20px;
       border-top: 1px solid var(--border-color);
       transform: translateY(100%);
-      transition: transform 0.15s ease-out; /* Fast hide speed */
+      transition: transform 0.1s linear; /* Instant response */
       z-index: 30;
     }
 
@@ -223,6 +223,9 @@
       const playPauseBtn = document.getElementById("play-pause-btn");
       const reloadBtn = document.getElementById("reload-btn");
 
+      let isPaused = false; // Internal tracking variable to prevent fight with loop
+      let hideTimeout = null;
+
       function getRufflePlayer() {
         const obj = document.getElementById("flash-container");
         if (obj && (typeof obj.pause === "function" || obj.metadata || obj.shadowRoot)) return obj;
@@ -258,12 +261,15 @@
 
       observer.observe(document.body, { childList: true, subtree: true });
 
-      /* Precise Bottom Edge Mouse Detection */
-      let hideTimeout = null;
+      /* Fast & Responsive Control Bar Toggle */
+      function hideBarImmediately() {
+        clearTimeout(hideTimeout);
+        controlBar.classList.remove("visible");
+      }
 
       document.addEventListener("mousemove", (e) => {
         const wrapperBounds = wrapper.getBoundingClientRect();
-        const triggerThreshold = 8; // Pixels from bottom edge
+        const triggerThreshold = 8; // Must hit within 8px of absolute bottom edge
 
         const isAtBottomWindow = (window.innerHeight - e.clientY) <= triggerThreshold;
         const isAtBottomWrapper = (wrapperBounds.bottom - e.clientY) <= triggerThreshold && 
@@ -283,54 +289,26 @@
           clearTimeout(hideTimeout);
           hideTimeout = setTimeout(() => {
             controlBar.classList.remove("visible");
-          }, 150); // Snappy hide transition
+          }, 50); // Snappy 50ms hiding
         }
       });
 
-      /* Robust Play/Pause Detection */
-      function isPlayerPaused(player) {
-        if (!player) return false;
-        
-        // Method 1: Check Ruffle shadowRoot play overlay visibility
-        if (player.shadowRoot) {
-          const overlay = player.shadowRoot.querySelector("#play-overlay");
-          if (overlay && getComputedStyle(overlay).display !== "none") {
-            return true;
-          }
-        }
+      // Instantly close bar when mouse exits the player window
+      wrapper.addEventListener("mouseleave", hideBarImmediately);
+      window.addEventListener("mouseleave", hideBarImmediately);
 
-        // Method 2: Call instance method
-        if (typeof player.isPlaying === "function") {
-          return !player.isPlaying();
-        }
-
-        return false;
-      }
-
-      // Continuous loop syncing button UI state with actual SWF state
-      setInterval(() => {
-        const player = getRufflePlayer();
-        if (!player) return;
-
-        const paused = isPlayerPaused(player);
-        const expectedText = paused ? "Play" : "Pause";
-
-        if (playPauseBtn.textContent !== expectedText) {
-          playPauseBtn.textContent = expectedText;
-        }
-      }, 150);
-
+      /* Manual Play/Pause state handling */
       playPauseBtn.addEventListener("click", () => {
         const player = getRufflePlayer();
         if (!player) return;
 
-        const paused = isPlayerPaused(player);
-
-        if (paused) {
+        if (isPaused) {
           if (typeof player.play === "function") player.play();
+          isPaused = false;
           playPauseBtn.textContent = "Pause";
         } else {
           if (typeof player.pause === "function") player.pause();
+          isPaused = true;
           playPauseBtn.textContent = "Play";
         }
       });
@@ -349,6 +327,7 @@
             setTimeout(() => container.setAttribute("data", currentData), 10);
           }
         }
+        isPaused = false;
         playPauseBtn.textContent = "Pause";
       });
 
