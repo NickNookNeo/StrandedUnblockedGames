@@ -1,9 +1,10 @@
 # Stranded's HTML Crawls
 Games
+[Flash Classics!](https)
 
 
-[Baldi's Basics](https://nicknookneo.github.io/StrandedUnblockedGames/Baldi)
+[Baldi's Basics](/StrandedUnblockedGames/Baldi)
 
-[Super Mario 64](https://nicknookneo.github.io/StrandedUnblockedGames/Mario64)
+[Super Mario 64](/StrandedUnblockedGames/Mario64)
 
-[Backrooms](https://nicknookneo.github.io/StrandedUnblockedGames/Backrooms)
+[Backrooms](/nicknookneo.github.io/StrandedUnblockedGames/Backrooms)
