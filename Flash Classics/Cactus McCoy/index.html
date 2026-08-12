@@ -106,6 +106,28 @@
       background: transparent !important;
     }
 
+    /* FPS Counter Overlay */
+    .fps-counter {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-color);
+      color: #38bdf8;
+      font-family: monospace;
+      font-weight: bold;
+      font-size: 0.8rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      pointer-events: none;
+      z-index: 20;
+      display: none;
+    }
+
+    .fps-counter.active {
+      display: block;
+    }
+
     .control-bar {
       position: absolute;
       bottom: 0;
@@ -119,8 +141,6 @@
       padding: 12px 20px;
       border-top: 1px solid var(--border-color);
       transform: translateY(100%);
-      
-      /* Exit timing: Smooth slide out */
       transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
       z-index: 30;
       pointer-events: none;
@@ -129,8 +149,6 @@
     .control-bar.visible {
       transform: translateY(0);
       pointer-events: auto;
-      
-      /* Entrance timing: Requires hover at bottom edge before sliding in */
       transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
     }
 
@@ -221,14 +239,96 @@
       transform: scale(1.2);
     }
 
-    .volume-slider::-moz-range-thumb {
-      width: 12px;
-      height: 12px;
+    /* Modal / Mapper Overlay */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 8, 17, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      padding: 1.5rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.75rem;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: var(--accent-color);
+      font-size: 1.2rem;
+    }
+
+    .close-modal-btn {
+      background: transparent;
       border: none;
-      border-radius: 50%;
-      background: var(--accent-color);
+      color: var(--text-color);
+      font-size: 1.2rem;
       cursor: pointer;
-      transition: transform 0.1s ease;
+    }
+
+    .mapper-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 250px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .mapper-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.03);
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+
+    .bind-btn {
+      padding: 4px 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--accent-color);
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .bind-btn.listening {
+      background: var(--accent-color);
+      color: #000;
+      font-weight: bold;
     }
 
     .player-wrapper:fullscreen {
@@ -282,6 +382,7 @@
   </div>
 
   <div class="player-wrapper" id="player-wrapper" tabindex="0">
+    <div class="fps-counter" id="fps-counter">FPS: 00</div>
     <div class="player-container" id="player-container">
       <object id="flash-container" type="application/x-shockwave-flash" data="cactusmccoy.swf">
         <p>Unable to load Flash content.</p>
@@ -300,7 +401,23 @@
       </div>
       
       <div class="control-group">
+        <button class="control-btn" id="fps-btn">FPS</button>
+        <button class="control-btn" id="mapper-btn">🎮 Controller</button>
         <button class="control-btn" id="fs-btn">Fullscreen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gamepad Mapping Modal -->
+  <div class="modal-overlay" id="mapper-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Gamepad Mapper</h3>
+        <button class="close-modal-btn" id="close-modal">&times;</button>
+      </div>
+      <div id="gamepad-status" style="font-size: 0.85rem; color: #94a3b8;">No Gamepad Detected. Press any button on controller.</div>
+      <div class="mapper-list" id="mapper-list">
+        <!-- Rows dynamically injected -->
       </div>
     </div>
   </div>
@@ -313,6 +430,13 @@
       const fsBtn = document.getElementById("fs-btn");
       const playPauseBtn = document.getElementById("play-pause-btn");
       const reloadBtn = document.getElementById("reload-btn");
+      const fpsBtn = document.getElementById("fps-btn");
+      const fpsCounter = document.getElementById("fps-counter");
+      const mapperBtn = document.getElementById("mapper-btn");
+      const mapperModal = document.getElementById("mapper-modal");
+      const closeModal = document.getElementById("close-modal");
+      const gamepadStatus = document.getElementById("gamepad-status");
+      const mapperList = document.getElementById("mapper-list");
       
       const muteBtn = document.getElementById("mute-btn");
       const volumeSlider = document.getElementById("volume-slider");
@@ -321,6 +445,151 @@
       let isRatioApplied = false;
       let previousVolume = 1;
 
+      /* --- FPS COUNTER LOGIC --- */
+      let fpsActive = false;
+      let frameCount = 0;
+      let lastFpsTime = performance.now();
+      let fpsAnimationId = null;
+
+      function updateFPS() {
+        const now = performance.now();
+        frameCount++;
+        if (now - lastFpsTime >= 1000) {
+          fpsCounter.textContent = `FPS: ${frameCount}`;
+          frameCount = 0;
+          lastFpsTime = now;
+        }
+        if (fpsActive) {
+          fpsAnimationId = requestAnimationFrame(updateFPS);
+        }
+      }
+
+      fpsBtn.addEventListener("click", () => {
+        fpsActive = !fpsActive;
+        fpsCounter.classList.toggle("active", fpsActive);
+        fpsBtn.style.color = fpsActive ? "var(--accent-color)" : "var(--text-color)";
+        if (fpsActive) {
+          frameCount = 0;
+          lastFpsTime = performance.now();
+          updateFPS();
+        } else if (fpsAnimationId) {
+          cancelAnimationFrame(fpsAnimationId);
+        }
+      });
+
+      /* --- GAMEPAD MAPPER LOGIC --- */
+      // Default XInput / SDL Binds to Keyboard Events
+      const defaultBinds = [
+        { label: "Button A (Jump/Action)", padIndex: 0, key: "Space", code: "Space" },
+        { label: "Button B (Attack/Cancel)", padIndex: 1, key: "x", code: "KeyX" },
+        { label: "Button X (Attack/Special)", padIndex: 2, key: "z", code: "KeyZ" },
+        { label: "D-Pad Up / L-Stick Up", axisOrButton: "padUp", key: "ArrowUp", code: "ArrowUp" },
+        { label: "D-Pad Down / L-Stick Down", axisOrButton: "padDown", key: "ArrowDown", code: "ArrowDown" },
+        { label: "D-Pad Left / L-Stick Left", axisOrButton: "padLeft", key: "ArrowLeft", code: "ArrowLeft" },
+        { label: "D-Pad Right / L-Stick Right", axisOrButton: "padRight", key: "ArrowRight", code: "ArrowRight" }
+      ];
+
+      let binds = JSON.parse(localStorage.getItem("flash_gamepad_binds")) || defaultBinds;
+      let listeningIndex = -1;
+      const activeState = {};
+
+      function renderMapperUI() {
+        mapperList.innerHTML = "";
+        binds.forEach((bind, idx) => {
+          const row = document.createElement("div");
+          row.className = "mapper-row";
+          row.innerHTML = `
+            <span style="font-size: 0.85rem;">${bind.label}</span>
+            <button class="bind-btn ${listeningIndex === idx ? 'listening' : ''}" data-idx="${idx}">
+              ${listeningIndex === idx ? 'Press Key...' : bind.key}
+            </button>
+          `;
+          mapperList.appendChild(row);
+        });
+
+        document.querySelectorAll(".bind-btn").forEach(btn => {
+          btn.addEventListener("click", (e) => {
+            listeningIndex = parseInt(e.target.getAttribute("data-idx"));
+            renderMapperUI();
+          });
+        });
+      }
+
+      window.addEventListener("keydown", (e) => {
+        if (listeningIndex !== -1) {
+          e.preventDefault();
+          binds[listeningIndex].key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+          binds[listeningIndex].code = e.code;
+          localStorage.setItem("flash_gamepad_binds", JSON.stringify(binds));
+          listeningIndex = -1;
+          renderMapperUI();
+        }
+      });
+
+      mapperBtn.addEventListener("click", () => {
+        renderMapperUI();
+        mapperModal.classList.add("open");
+      });
+
+      closeModal.addEventListener("click", () => {
+        mapperModal.classList.remove("open");
+        listeningIndex = -1;
+      });
+
+      function sendKeyEvent(type, key, code) {
+        const evt = new KeyboardEvent(type, {
+          key: key,
+          code: code,
+          bubbles: true,
+          cancelable: true
+        });
+        wrapper.dispatchEvent(evt);
+      }
+
+      function pollGamepad() {
+        const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+        let activePad = null;
+        for (let i = 0; i < gamepads.length; i++) {
+          if (gamepads[i]) {
+            activePad = gamepads[i];
+            break;
+          }
+        }
+
+        if (activePad) {
+          gamepadStatus.textContent = `Active: ${activePad.id.split('(')[0]}`;
+          
+          binds.forEach(bind => {
+            let isPressed = false;
+            
+            if (bind.padIndex !== undefined && activePad.buttons[bind.padIndex]) {
+              isPressed = activePad.buttons[bind.padIndex].pressed;
+            } else if (bind.axisOrButton) {
+              const axes = activePad.axes;
+              if (bind.axisOrButton === "padUp") isPressed = (axes[1] && axes[1] < -0.5) || (activePad.buttons[12] && activePad.buttons[12].pressed);
+              if (bind.axisOrButton === "padDown") isPressed = (axes[1] && axes[1] > 0.5) || (activePad.buttons[13] && activePad.buttons[13].pressed);
+              if (bind.axisOrButton === "padLeft") isPressed = (axes[0] && axes[0] < -0.5) || (activePad.buttons[14] && activePad.buttons[14].pressed);
+              if (bind.axisOrButton === "padRight") isPressed = (axes[0] && axes[0] > 0.5) || (activePad.buttons[15] && activePad.buttons[15].pressed);
+            }
+
+            const stateKey = bind.label;
+            if (isPressed && !activeState[stateKey]) {
+              activeState[stateKey] = true;
+              sendKeyEvent("keydown", bind.key, bind.code);
+            } else if (!isPressed && activeState[stateKey]) {
+              activeState[stateKey] = false;
+              sendKeyEvent("keyup", bind.key, bind.code);
+            }
+          });
+        } else {
+          gamepadStatus.textContent = "No Gamepad Detected. Connect or press any button.";
+        }
+
+        requestAnimationFrame(pollGamepad);
+      }
+      requestAnimationFrame(pollGamepad);
+
+      /* --- HELPER & RUFFLE PLAYER FUNCTIONS --- */
       function getRufflePlayer() {
         const obj = document.getElementById("flash-container");
         if (obj && (typeof obj.pause === "function" || obj.metadata || obj.shadowRoot)) return obj;
@@ -333,7 +602,6 @@
 
       function setDynamicAspectRatio(width, height) {
         if (!width || !height || isRatioApplied) return;
-        
         playerContainer.style.aspectRatio = `${width} / ${height}`;
         isRatioApplied = true;
       }
@@ -386,7 +654,7 @@
         if (val == 0) {
           muteBtn.textContent = "🔇";
         } else if (val < 0.5) {
-          muteBtn.textContent = "m🔉";
+          muteBtn.textContent = "🔉";
         } else {
           muteBtn.textContent = "🔊";
         }
