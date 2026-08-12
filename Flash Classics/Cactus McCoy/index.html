@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flash Game Player</title>
+  <title>Flash Player</title>
   <style>
     *, *::before, *::after {
       box-sizing: border-box;
@@ -108,6 +108,7 @@
       overflow: hidden !important;
       border: none !important;
       box-shadow: none !important;
+      outline: none;
     }
 
     .game-container {
@@ -174,7 +175,7 @@
       padding: 10px 16px;
       border-top: 1px solid var(--border-color);
       transform: translateY(100%);
-      transition: transform 0.2s ease-in-out;
+      transition: transform 0.25s ease-in-out;
       z-index: 50;
     }
 
@@ -316,8 +317,8 @@
 
   <div class="header-container">
     <div class="header-top">
-      <a href="../index.html" class="back-btn">&larr; Games List</a>
-      <h1 class="game-title">Cactus McCoy</h1>
+      <a href="index.html" class="back-btn">&larr; Games List</a>
+      <h1 class="game-title" id="display-title">Loading...</h1>
       <div style="width: 100px;"></div>
     </div>
     
@@ -329,7 +330,7 @@
 
   <div class="player-wrapper" id="player-wrapper" tabindex="0">
     <div class="game-container" id="game-container">
-      <object id="flash-container" type="application/x-shockwave-flash" data="cactusmccoy.swf">
+      <object id="flash-container" type="application/x-shockwave-flash" data="">
         <param name="scale" value="exactFit" />
         <param name="wmode" value="transparent" />
         <param name="bgcolor" value="transparent" />
@@ -428,6 +429,16 @@
 
   <script>
     window.addEventListener("DOMContentLoaded", () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const gameFile = urlParams.get("game") || "cactusmccoy.swf";
+      const gameTitle = urlParams.get("title") || "Flash Game";
+
+      document.getElementById("display-title").textContent = gameTitle;
+      document.title = `${gameTitle} - Flash Player`;
+
+      const flashObj = document.getElementById("flash-container");
+      flashObj.setAttribute("data", gameFile);
+
       const wrapper = document.getElementById("player-wrapper");
       const gameContainer = document.getElementById("game-container");
       const kbModal = document.getElementById("kb-modal");
@@ -485,7 +496,7 @@
       window.addEventListener("resize", fitGameContainer);
       setInterval(fitGameContainer, 300);
 
-      const keyMap = {
+      const defaultKeyMap = {
         ArrowLeft:  { key: "ArrowLeft",  code: "ArrowLeft",  keyCode: 37 },
         ArrowRight: { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
         ArrowUp:    { key: "ArrowUp",    code: "ArrowUp",    keyCode: 38 },
@@ -497,7 +508,11 @@
         ShiftLeft:  { key: "Shift",      code: "ShiftLeft",  keyCode: 16 }
       };
 
-      const controllerBinds = {
+      const savedKeyMap = localStorage.getItem("flash_key_map");
+      const keyMap = savedKeyMap ? JSON.parse(savedKeyMap) : defaultKeyMap;
+
+      const savedPadMap = localStorage.getItem("flash_pad_map");
+      const controllerBinds = savedPadMap ? JSON.parse(savedPadMap) : {
         0: keyMap.KeyA,
         1: keyMap.KeyS,
         2: keyMap.KeyA,
@@ -507,6 +522,27 @@
       };
 
       const activePadState = {};
+
+      function saveBindings() {
+        localStorage.setItem("flash_key_map", JSON.stringify(keyMap));
+        localStorage.setItem("flash_pad_map", JSON.stringify(controllerBinds));
+      }
+
+      function updateBindButtonsDisplay() {
+        document.querySelectorAll(".kb-bind").forEach(btn => {
+          const target = btn.getAttribute("data-target");
+          if (keyMap[target]) {
+            btn.textContent = keyMap[target].key === " " ? "Space" : keyMap[target].key.toUpperCase();
+          }
+        });
+        document.querySelectorAll(".pad-bind").forEach(btn => {
+          const idx = btn.getAttribute("data-pad-btn");
+          if (controllerBinds[idx]) {
+            btn.textContent = controllerBinds[idx].key === " " ? "Space" : controllerBinds[idx].key.toUpperCase();
+          }
+        });
+      }
+      updateBindButtonsDisplay();
 
       document.getElementById("fs-btn").addEventListener("click", () => {
         if (!document.fullscreenElement) wrapper.requestFullscreen();
@@ -542,10 +578,21 @@
         }
       });
 
+      function focusPlayer() {
+        wrapper.focus();
+      }
+
       document.getElementById("kb-btn").onclick = () => kbModal.classList.add("open");
-      document.getElementById("close-kb").onclick = () => kbModal.classList.remove("open");
+      document.getElementById("close-kb").onclick = () => {
+        kbModal.classList.remove("open");
+        focusPlayer();
+      };
+
       document.getElementById("mapper-btn").onclick = () => mapperModal.classList.add("open");
-      document.getElementById("close-mapper").onclick = () => mapperModal.classList.remove("open");
+      document.getElementById("close-mapper").onclick = () => {
+        mapperModal.classList.remove("open");
+        focusPlayer();
+      };
 
       document.querySelectorAll(".bind-key").forEach(btn => {
         btn.addEventListener("click", (e) => {
@@ -573,6 +620,7 @@
           activeListeningBtn.textContent = displayLabel;
         }
 
+        saveBindings();
         activeListeningBtn.classList.remove("listening");
         activeListeningBtn = null;
       });
