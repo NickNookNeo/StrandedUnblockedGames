@@ -109,7 +109,7 @@
       width: 100%;
     }
 
-    /* Player Container */
+    /* Player Wrapper */
     .player-wrapper {
       position: relative;
       display: flex;
@@ -121,7 +121,7 @@
       flex: 1;
       min-height: 0;
       margin: 0 auto;
-      background: #000;
+      background: radial-gradient(circle at center, #1e293b 0%, #050811 100%);
       border-radius: 12px;
       overflow: hidden;
       border: 1px solid var(--border-color);
@@ -134,15 +134,32 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
       position: relative;
-      background: #000;
+      overflow: hidden;
     }
 
-    /* Ruffle Embed Elements Native Layout */
-    #flash-container, ruffle-embed, ruffle-object, ruffle-player {
+    /* Scale Modes CSS overrides for non-fullscreen */
+    .player-container.scale-fit ruffle-player,
+    .player-container.scale-fit #flash-container {
       width: 100% !important;
       height: 100% !important;
+    }
+
+    .player-container.scale-stretch ruffle-player,
+    .player-container.scale-stretch #flash-container {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .player-container.scale-original ruffle-player,
+    .player-container.scale-original #flash-container {
+      width: auto !important;
+      height: auto !important;
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    #flash-container, ruffle-embed, ruffle-object, ruffle-player {
       display: block !important;
     }
 
@@ -257,121 +274,20 @@
       cursor: pointer;
     }
 
-    .modal-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(5, 8, 17, 0.85);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
+    /* Fullscreen & Theater Overrides retaining gradient */
+    .player-wrapper:fullscreen,
+    .player-wrapper:-webkit-full-screen {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      border-radius: 0 !important;
+      border: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: radial-gradient(circle at center, #1e293b 0%, #050811 100%) !important;
     }
 
-    .modal-overlay.open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .modal-card {
-      background: #0f172a;
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      width: 90%;
-      max-width: 480px;
-      padding: 1.25rem;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-      display: flex;
-      flex-direction: column;
-      gap: 0.85rem;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 0.5rem;
-    }
-
-    .modal-header h3 {
-      margin: 0;
-      color: var(--accent-color);
-      font-size: 1.1rem;
-    }
-
-    .close-modal-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-color);
-      font-size: 1.2rem;
-      cursor: pointer;
-    }
-
-    .mapper-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      max-height: 220px;
-      overflow-y: auto;
-    }
-
-    .mapper-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(255,255,255,0.03);
-      padding: 6px 10px;
-      border-radius: 6px;
-      border: 1px solid var(--border-color);
-    }
-
-    .bind-btn {
-      padding: 3px 8px;
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      color: var(--accent-color);
-      border-radius: 4px;
-      font-size: 0.75rem;
-      cursor: pointer;
-      min-width: 75px;
-      text-align: center;
-    }
-
-    .bind-btn.listening {
-      background: var(--accent-color);
-      color: #000;
-      font-weight: bold;
-    }
-
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      border-top: 1px solid var(--border-color);
-      padding-top: 0.5rem;
-    }
-
-    .reset-btn {
-      padding: 5px 10px;
-      background-color: rgba(239, 68, 68, 0.1);
-      color: var(--danger-color);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .reset-btn.confirm-state {
-      background-color: var(--danger-color);
-      color: #fff;
-    }
-
-    /* Theater Mode Overrides */
     body.theater-mode {
       padding: 0 !important;
       overflow: hidden !important;
@@ -387,20 +303,6 @@
       height: 100vh !important;
       border-radius: 0 !important;
       border: none !important;
-    }
-
-    /* Native Fullscreen Rules */
-    .player-wrapper:fullscreen,
-    .player-wrapper:-webkit-full-screen {
-      width: 100vw !important;
-      height: 100vh !important;
-      max-width: 100vw !important;
-      max-height: 100vh !important;
-      border-radius: 0 !important;
-      border: none !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      background: #000 !important;
     }
   </style>
 
@@ -434,7 +336,7 @@
 
   <div class="player-wrapper" id="player-wrapper" tabindex="0">
     <div class="fps-counter" id="fps-counter">FPS: 00</div>
-    <div class="player-container" id="player-container">
+    <div class="player-container scale-fit" id="player-container">
       <object id="flash-container" type="application/x-shockwave-flash" data="cactusmccoy.swf">
         <param name="scale" value="showAll" />
         <p>Unable to load Flash content.</p>
@@ -458,36 +360,6 @@
         <button class="control-btn" id="fs-btn">Fullscreen</button>
       </div>
     </div>
-
-    <!-- Controller Modal -->
-    <div class="modal-overlay" id="mapper-modal">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3>Gamepad Mapper</h3>
-          <button class="close-modal-btn" id="close-modal">&times;</button>
-        </div>
-        <div id="gamepad-status" style="font-size: 0.8rem; color: #94a3b8;">No Gamepad Detected. Press any button on controller.</div>
-        <div class="mapper-list" id="mapper-list"></div>
-        <div class="modal-footer">
-          <button class="reset-btn" id="reset-binds-btn">Reset Binds</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Keyboard Modal -->
-    <div class="modal-overlay" id="kb-modal">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3>Keyboard Rebinding</h3>
-          <button class="close-modal-btn" id="close-kb-modal">&times;</button>
-        </div>
-        <div style="font-size: 0.8rem; color: #94a3b8;">Remap standard inputs to custom keys.</div>
-        <div class="mapper-list" id="kb-list"></div>
-        <div class="modal-footer">
-          <button class="reset-btn" id="reset-kb-btn">Reset Defaults</button>
-        </div>
-      </div>
-    </div>
   </div>
 
   <script>
@@ -497,60 +369,37 @@
       const controlBar = document.getElementById("control-bar");
       const fsBtn = document.getElementById("fs-btn");
       const theaterBtn = document.getElementById("theater-btn");
-      const playPauseBtn = document.getElementById("play-pause-btn");
-      const reloadBtn = document.getElementById("reload-btn");
-      const fpsBtn = document.getElementById("fps-btn");
-      const fpsCounter = document.getElementById("fps-counter");
       const scaleBtn = document.getElementById("scale-btn");
 
-      const mapperBtn = document.getElementById("mapper-btn");
-      const mapperModal = document.getElementById("mapper-modal");
-      const closeModal = document.getElementById("close-modal");
-      const gamepadStatus = document.getElementById("gamepad-status");
-      const mapperList = document.getElementById("mapper-list");
-      const resetBindsBtn = document.getElementById("reset-binds-btn");
-
-      const kbBtn = document.getElementById("kb-btn");
-      const kbModal = document.getElementById("kb-modal");
-      const closeKbModal = document.getElementById("close-kb-modal");
-      const kbList = document.getElementById("kb-list");
-      const resetKbBtn = document.getElementById("reset-kb-btn");
-
-      const muteBtn = document.getElementById("mute-btn");
-      const volumeSlider = document.getElementById("volume-slider");
-
-      let isPaused = false;
-      let previousVolume = 1;
-
       const scaleModes = [
-        { name: "Scale: Fit", scale: "showAll", letterbox: "on" },
-        { name: "Scale: Stretch", scale: "exactFit", letterbox: "off" },
-        { name: "Scale: Original", scale: "noScale", letterbox: "on" }
+        { name: "Scale: Fit", class: "scale-fit", scale: "showAll", letterbox: "on" },
+        { name: "Scale: Stretch", class: "scale-stretch", scale: "exactFit", letterbox: "off" },
+        { name: "Scale: Original", class: "scale-original", scale: "noScale", letterbox: "on" }
       ];
       let currentScaleIdx = 0;
 
       function getRufflePlayer() {
         const obj = document.getElementById("flash-container");
         if (obj && (typeof obj.pause === "function" || obj.metadata || obj.shadowRoot)) return obj;
-        const ruffleTag = document.querySelector("ruffle-embed, ruffle-object, ruffle-player");
-        return ruffleTag || null;
+        return document.querySelector("ruffle-embed, ruffle-object, ruffle-player");
       }
 
-      function updateRuffleScale(mode) {
+      function applyScaleMode(mode) {
+        playerContainer.classList.remove("scale-fit", "scale-stretch", "scale-original");
+        playerContainer.classList.add(mode.class);
+
         const player = getRufflePlayer();
-        if (!player) return;
+        if (player) {
+          if (!player.config) player.config = {};
+          player.config.scale = mode.scale;
+          player.config.letterbox = mode.letterbox;
 
-        // Apply configuration via Ruffle's internal config object
-        if (!player.config) player.config = {};
-        player.config.scale = mode.scale;
-        player.config.letterbox = mode.letterbox;
+          player.setAttribute("scale", mode.scale);
+          player.setAttribute("letterbox", mode.letterbox);
 
-        // Apply attribute fallback directly onto player node
-        player.setAttribute("scale", mode.scale);
-        player.setAttribute("letterbox", mode.letterbox);
-
-        // Force viewport update
-        window.dispatchEvent(new Event("resize"));
+          // Force Ruffle engine to recalculate stage dimensions
+          window.dispatchEvent(new Event("resize"));
+        }
       }
 
       scaleBtn.addEventListener("click", () => {
@@ -558,360 +407,32 @@
         currentScaleIdx = (currentScaleIdx + 1) % scaleModes.length;
         const mode = scaleModes[currentScaleIdx];
         scaleBtn.textContent = mode.name;
-        updateRuffleScale(mode);
+        applyScaleMode(mode);
       });
-
-      theaterBtn.addEventListener("click", () => {
-        theaterBtn.blur();
-        document.body.classList.toggle("theater-mode");
-        theaterBtn.style.color = document.body.classList.contains("theater-mode") ? "var(--accent-color)" : "var(--text-color)";
-        setTimeout(() => {
-          window.dispatchEvent(new Event("resize"));
-        }, 50);
-      });
-
-      document.addEventListener("fullscreenchange", () => {
-        setTimeout(() => {
-          updateRuffleScale(scaleModes[currentScaleIdx]);
-        }, 100);
-      });
-
-      let fpsActive = false;
-      let realGameFrames = 0;
-      let fpsIntervalId = null;
-
-      function hookRuffleLoop() {
-        const ruffleTag = getRufflePlayer();
-        if (!ruffleTag) return;
-        const shadowRoot = ruffleTag.shadowRoot || ruffleTag;
-        const canvas = shadowRoot.querySelector("canvas");
-        if (!canvas) {
-          setTimeout(hookRuffleLoop, 200);
-          return;
-        }
-        const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
-        if (gl && !canvas.dataset.fpsHooked) {
-          canvas.dataset.fpsHooked = "true";
-          const origClear = gl.clear.bind(gl);
-          gl.clear = function(...args) {
-            if (fpsActive) realGameFrames++;
-            return origClear(...args);
-          };
-        }
-      }
-
-      function updateFpsDisplay() {
-        if (!fpsActive) return;
-        fpsCounter.textContent = `FPS: ${realGameFrames}`;
-        realGameFrames = 0;
-      }
-
-      fpsBtn.addEventListener("click", () => {
-        fpsActive = !fpsActive;
-        fpsCounter.classList.toggle("active", fpsActive);
-        fpsBtn.style.color = fpsActive ? "var(--accent-color)" : "var(--text-color)";
-
-        if (fpsActive) {
-          realGameFrames = 0;
-          hookRuffleLoop();
-          if (fpsIntervalId) clearInterval(fpsIntervalId);
-          fpsIntervalId = setInterval(updateFpsDisplay, 1000);
-        } else {
-          if (fpsIntervalId) clearInterval(fpsIntervalId);
-          fpsCounter.textContent = "FPS: 00";
-        }
-      });
-
-      const defaultKbBinds = [
-        { label: "Action / Jump", targetKey: "Space", mappedCode: "Space", mappedKey: " " },
-        { label: "Attack / Primary", targetKey: "X", mappedCode: "KeyX", mappedKey: "x" },
-        { label: "Special / Secondary", targetKey: "Z", mappedCode: "KeyZ", mappedKey: "z" },
-        { label: "Up", targetKey: "ArrowUp", mappedCode: "ArrowUp", mappedKey: "ArrowUp" },
-        { label: "Down", targetKey: "ArrowDown", mappedCode: "ArrowDown", mappedKey: "ArrowDown" },
-        { label: "Left", targetKey: "ArrowLeft", mappedCode: "ArrowLeft", mappedKey: "ArrowLeft" },
-        { label: "Right", targetKey: "ArrowRight", mappedCode: "ArrowRight", mappedKey: "ArrowRight" }
-      ];
-
-      let kbBinds = JSON.parse(localStorage.getItem("flash_kb_binds")) || JSON.parse(JSON.stringify(defaultKbBinds));
-      let kbListeningIndex = -1;
-
-      function renderKbMapperUI() {
-        kbList.innerHTML = "";
-        kbBinds.forEach((bind, idx) => {
-          const row = document.createElement("div");
-          row.className = "mapper-row";
-          row.innerHTML = `
-            <span style="font-size: 0.8rem;">${bind.label}</span>
-            <button class="bind-btn ${kbListeningIndex === idx ? 'listening' : ''}" data-kb-idx="${idx}">
-              ${kbListeningIndex === idx ? 'Press Key...' : (bind.mappedKey === ' ' ? 'Space' : bind.mappedKey.toUpperCase())}
-            </button>
-          `;
-          kbList.appendChild(row);
-        });
-
-        document.querySelectorAll("[data-kb-idx]").forEach(btn => {
-          btn.addEventListener("click", (e) => {
-            kbListeningIndex = parseInt(e.target.getAttribute("data-kb-idx"));
-            renderKbMapperUI();
-          });
-        });
-      }
-
-      resetKbBtn.addEventListener("click", () => {
-        kbBinds = JSON.parse(JSON.stringify(defaultKbBinds));
-        localStorage.removeItem("flash_kb_binds");
-        kbListeningIndex = -1;
-        renderKbMapperUI();
-      });
-
-      kbBtn.addEventListener("click", () => {
-        renderKbMapperUI();
-        kbModal.classList.add("open");
-      });
-
-      closeKbModal.addEventListener("click", () => {
-        kbModal.classList.remove("open");
-        kbListeningIndex = -1;
-      });
-
-      function sendKeyEvent(type, key, code) {
-        const evt = new KeyboardEvent(type, {
-          key: key,
-          code: code,
-          bubbles: true,
-          cancelable: true
-        });
-        wrapper.dispatchEvent(evt);
-      }
-
-      window.addEventListener("keydown", (e) => {
-        if (kbListeningIndex !== -1) {
-          e.preventDefault();
-          kbBinds[kbListeningIndex].mappedKey = e.key;
-          kbBinds[kbListeningIndex].mappedCode = e.code;
-          localStorage.setItem("flash_kb_binds", JSON.stringify(kbBinds));
-          kbListeningIndex = -1;
-          renderKbMapperUI();
-          return;
-        }
-
-        const mapped = kbBinds.find(b => b.mappedCode === e.code);
-        if (mapped && mapped.mappedKey !== mapped.targetKey) {
-          e.stopImmediatePropagation();
-          sendKeyEvent("keydown", mapped.targetKey, mapped.targetKey);
-        }
-      }, true);
-
-      window.addEventListener("keyup", (e) => {
-        const mapped = kbBinds.find(b => b.mappedCode === e.code);
-        if (mapped && mapped.mappedKey !== mapped.targetKey) {
-          e.stopImmediatePropagation();
-          sendKeyEvent("keyup", mapped.targetKey, mapped.targetKey);
-        }
-      }, true);
-
-      const defaultBinds = [
-        { label: "Button A (Jump/Action)", padIndex: 0, key: "Space", code: "Space" },
-        { label: "Button B (Attack/Cancel)", padIndex: 1, key: "x", code: "KeyX" },
-        { label: "Button X (Attack/Special)", padIndex: 2, key: "z", code: "KeyZ" },
-        { label: "D-Pad Up / L-Stick Up", axisOrButton: "padUp", key: "ArrowUp", code: "ArrowUp" },
-        { label: "D-Pad Down / L-Stick Down", axisOrButton: "padDown", key: "ArrowDown", code: "ArrowDown" },
-        { label: "D-Pad Left / L-Stick Left", axisOrButton: "padLeft", key: "ArrowLeft", code: "ArrowLeft" },
-        { label: "D-Pad Right / L-Stick Right", axisOrButton: "padRight", key: "ArrowRight", code: "ArrowRight" }
-      ];
-
-      let binds = JSON.parse(localStorage.getItem("flash_gamepad_binds")) || JSON.parse(JSON.stringify(defaultBinds));
-      let listeningIndex = -1;
-      let isResetConfirming = false;
-      const activeState = {};
-
-      function renderMapperUI() {
-        mapperList.innerHTML = "";
-        binds.forEach((bind, idx) => {
-          const row = document.createElement("div");
-          row.className = "mapper-row";
-          row.innerHTML = `
-            <span style="font-size: 0.8rem;">${bind.label}</span>
-            <button class="bind-btn ${listeningIndex === idx ? 'listening' : ''}" data-idx="${idx}">
-              ${listeningIndex === idx ? 'Press Key...' : bind.key}
-            </button>
-          `;
-          mapperList.appendChild(row);
-        });
-
-        document.querySelectorAll("[data-idx]").forEach(btn => {
-          btn.addEventListener("click", (e) => {
-            listeningIndex = parseInt(e.target.getAttribute("data-idx"));
-            resetConfirmState();
-            renderMapperUI();
-          });
-        });
-      }
-
-      function resetConfirmState() {
-        isResetConfirming = false;
-        resetBindsBtn.textContent = "Reset Binds";
-        resetBindsBtn.classList.remove("confirm-state");
-      }
-
-      resetBindsBtn.addEventListener("click", () => {
-        if (!isResetConfirming) {
-          isResetConfirming = true;
-          resetBindsBtn.textContent = "Are you sure you want to set all to default?";
-          resetBindsBtn.classList.add("confirm-state");
-        } else {
-          binds = JSON.parse(JSON.stringify(defaultBinds));
-          localStorage.removeItem("flash_gamepad_binds");
-          listeningIndex = -1;
-          resetConfirmState();
-          renderMapperUI();
-        }
-      });
-
-      mapperBtn.addEventListener("click", () => {
-        resetConfirmState();
-        renderMapperUI();
-        mapperModal.classList.add("open");
-      });
-
-      closeModal.addEventListener("click", () => {
-        mapperModal.classList.remove("open");
-        listeningIndex = -1;
-        resetConfirmState();
-      });
-
-      function pollGamepad() {
-        const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-        let activePad = null;
-        for (let i = 0; i < gamepads.length; i++) {
-          if (gamepads[i]) {
-            activePad = gamepads[i];
-            break;
-          }
-        }
-
-        if (activePad) {
-          gamepadStatus.textContent = `Active: ${activePad.id.split('(')[0]}`;
-          binds.forEach(bind => {
-            let isPressed = false;
-            if (bind.padIndex !== undefined && activePad.buttons[bind.padIndex]) {
-              isPressed = activePad.buttons[bind.padIndex].pressed;
-            } else if (bind.axisOrButton) {
-              const axes = activePad.axes;
-              if (bind.axisOrButton === "padUp") isPressed = (axes[1] && axes[1] < -0.5) || (activePad.buttons[12] && activePad.buttons[12].pressed);
-              if (bind.axisOrButton === "padDown") isPressed = (axes[1] && axes[1] > 0.5) || (activePad.buttons[13] && activePad.buttons[13].pressed);
-              if (bind.axisOrButton === "padLeft") isPressed = (axes[0] && axes[0] < -0.5) || (activePad.buttons[14] && activePad.buttons[14].pressed);
-              if (bind.axisOrButton === "padRight") isPressed = (axes[0] && axes[0] > 0.5) || (activePad.buttons[15] && activePad.buttons[15].pressed);
-            }
-
-            const stateKey = bind.label;
-            if (isPressed && !activeState[stateKey]) {
-              activeState[stateKey] = true;
-              sendKeyEvent("keydown", bind.key, bind.code);
-            } else if (!isPressed && activeState[stateKey]) {
-              activeState[stateKey] = false;
-              sendKeyEvent("keyup", bind.key, bind.code);
-            }
-          });
-        } else {
-          gamepadStatus.textContent = "No Gamepad Detected. Connect or press any button.";
-        }
-        requestAnimationFrame(pollGamepad);
-      }
-      requestAnimationFrame(pollGamepad);
 
       function toggleFullscreen() {
         if (!document.fullscreenElement) {
-          if (wrapper.requestFullscreen) wrapper.requestFullscreen();
+          if (wrapper.requestFullscreen) {
+            wrapper.requestFullscreen();
+          }
         } else {
-          if (document.exitFullscreen) document.exitFullscreen();
-        }
-      }
-
-      function updateVolume(val) {
-        const player = getRufflePlayer();
-        if (player) player.volume = val;
-        volumeSlider.value = val;
-        muteBtn.textContent = val == 0 ? "🔇" : (val < 0.5 ? "Dis" : "🔊");
-      }
-
-      volumeSlider.addEventListener("input", (e) => {
-        const val = parseFloat(e.target.value);
-        updateVolume(val);
-        if (val > 0) previousVolume = val;
-      });
-
-      muteBtn.addEventListener("click", () => {
-        muteBtn.blur();
-        if (volumeSlider.value > 0) {
-          previousVolume = volumeSlider.value;
-          updateVolume(0);
-        } else {
-          updateVolume(previousVolume || 1);
-        }
-      });
-
-      document.addEventListener("mousemove", (e) => {
-        const wrapperBounds = wrapper.getBoundingClientRect();
-        const barBounds = controlBar.getBoundingClientRect();
-        const triggerZoneHeight = 10;
-        const distanceToBottom = wrapperBounds.bottom - e.clientY;
-        const isXInside = e.clientX >= wrapperBounds.left && e.clientX <= wrapperBounds.right;
-        const isHoveringBar = e.clientX >= barBounds.left && e.clientX <= barBounds.right &&
-                              e.clientY >= barBounds.top && e.clientY <= barBounds.bottom;
-
-        if ((isXInside && distanceToBottom >= 0 && distanceToBottom <= triggerZoneHeight) || isHoveringBar) {
-          controlBar.classList.add("visible");
-        } else {
-          controlBar.classList.remove("visible");
-        }
-      });
-
-      wrapper.addEventListener("mouseleave", () => controlBar.classList.remove("visible"));
-      window.addEventListener("mouseleave", () => controlBar.classList.remove("visible"));
-
-      playPauseBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        playPauseBtn.blur();
-        const player = getRufflePlayer();
-        if (!player) return;
-
-        if (isPaused) {
-          if (typeof player.play === "function") player.play();
-          isPaused = false;
-          playPauseBtn.textContent = "Pause";
-        } else {
-          if (typeof player.pause === "function") player.pause();
-          isPaused = true;
-          playPauseBtn.textContent = "Play";
-        }
-      });
-
-      reloadBtn.addEventListener("click", () => {
-        reloadBtn.blur();
-        const player = getRufflePlayer();
-        if (!player) return;
-
-        if (typeof player.reload === "function") {
-          player.reload();
-        } else {
-          const container = document.getElementById("flash-container");
-          if (container) {
-            const currentData = container.getAttribute("data");
-            container.setAttribute("data", "");
-            setTimeout(() => container.setAttribute("data", currentData), 10);
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
           }
         }
-        isPaused = false;
-        playPauseBtn.textContent = "Pause";
-      });
+      }
 
       fsBtn.addEventListener("click", () => {
         fsBtn.blur();
         toggleFullscreen();
       });
+
+      document.addEventListener("fullscreenchange", () => {
+        setTimeout(() => {
+          applyScaleMode(scaleModes[currentScaleIdx]);
+        }, 100);
+      });
     });
   </script>
-
 </body>
 </html>
