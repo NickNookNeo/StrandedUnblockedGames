@@ -3,8 +3,6 @@ Games
 [Flash Classics!](https)
 
 
-[Baldi's Basics](/Baldi)
+[Super Mario 64](https://subg.strandedclone.space/Mario64)
 
-[Super Mario 64](/Mario64)
-
-[Backrooms](/StrandedUnblockedGames/Backrooms)
+[Backrooms](https://subg.strandedclone.space/Backrooms)
