@@ -1,1 +1,1 @@
-[Mario Combat](</Mario Combat/>)
+[Mario Combat](<./Mario Combat/>)
