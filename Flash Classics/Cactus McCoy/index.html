@@ -73,6 +73,8 @@
       position: relative;
       display: flex;
       flex-direction: column;
+      align-items: center;
+      justify-content: center;
       width: 100%;
       max-width: 800px;
       background: radial-gradient(circle at center, #1e293b 0%, #050811 100%);
@@ -85,17 +87,21 @@
 
     .player-container {
       width: 100%;
+      height: 100%;
       aspect-ratio: 4 / 3;
       background: transparent;
       display: flex;
       justify-content: center;
       align-items: center;
       overflow: hidden;
+      position: relative;
     }
 
     #flash-container, ruffle-embed, ruffle-object, ruffle-player {
       width: 100% !important;
       height: 100% !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
       display: block;
       background: transparent !important;
     }
@@ -153,7 +159,6 @@
       outline: none;
     }
 
-    /* Fixed Fullscreen Rules */
     .player-wrapper:fullscreen {
       width: 100vw !important;
       height: 100vh !important;
@@ -171,9 +176,8 @@
     .player-wrapper:fullscreen .player-container {
       max-width: 100vw !important;
       max-height: 100vh !important;
-      width: 100% !important;
+      width: auto !important;
       height: 100% !important;
-      object-fit: contain;
     }
   </style>
 
@@ -225,7 +229,6 @@
       const reloadBtn = document.getElementById("reload-btn");
 
       let isPaused = false;
-      let hideTimeout = null;
       let isRatioApplied = false;
 
       function getRufflePlayer() {
@@ -267,39 +270,26 @@
 
       setTimeout(() => clearInterval(metaInterval), 5000);
 
-      function hideBarImmediately() {
-        clearTimeout(hideTimeout);
+      function hideBar() {
         controlBar.classList.remove("visible");
       }
 
       document.addEventListener("mousemove", (e) => {
         const wrapperBounds = wrapper.getBoundingClientRect();
-        const triggerThreshold = 8;
+        const triggerZoneHeight = 60;
 
-        const isAtBottomWindow = (window.innerHeight - e.clientY) <= triggerThreshold;
-        const isAtBottomWrapper = (wrapperBounds.bottom - e.clientY) <= triggerThreshold && 
-                                  e.clientX >= wrapperBounds.left && 
-                                  e.clientX <= wrapperBounds.right;
+        const distanceToBottom = wrapperBounds.bottom - e.clientY;
+        const isXInside = e.clientX >= wrapperBounds.left && e.clientX <= wrapperBounds.right;
 
-        const barBounds = controlBar.getBoundingClientRect();
-        const isHoveringBar = e.clientX >= barBounds.left && 
-                              e.clientX <= barBounds.right && 
-                              e.clientY >= barBounds.top && 
-                              e.clientY <= barBounds.bottom;
-
-        if (isAtBottomWindow || isAtBottomWrapper || isHoveringBar) {
-          clearTimeout(hideTimeout);
+        if (isXInside && distanceToBottom >= 0 && distanceToBottom <= triggerZoneHeight) {
           controlBar.classList.add("visible");
         } else {
-          clearTimeout(hideTimeout);
-          hideTimeout = setTimeout(() => {
-            controlBar.classList.remove("visible");
-          }, 50);
+          hideBar();
         }
       });
 
-      wrapper.addEventListener("mouseleave", hideBarImmediately);
-      window.addEventListener("mouseleave", hideBarImmediately);
+      wrapper.addEventListener("mouseleave", hideBar);
+      window.addEventListener("mouseleave", hideBar);
 
       playerContainer.addEventListener("click", () => {
         if (isPaused) {
