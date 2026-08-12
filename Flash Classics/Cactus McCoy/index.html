@@ -445,40 +445,66 @@
       let isRatioApplied = false;
       let previousVolume = 1;
 
-      /* --- FPS COUNTER LOGIC --- */
+      /* --- REAL GAME FPS COUNTER LOGIC --- */
       let fpsActive = false;
-      let frameCount = 0;
-      let lastFpsTime = performance.now();
-      let fpsAnimationId = null;
+      let realGameFrames = 0;
+      let fpsIntervalId = null;
 
-      function updateFPS() {
-        const now = performance.now();
-        frameCount++;
-        if (now - lastFpsTime >= 1000) {
-          fpsCounter.textContent = `FPS: ${frameCount}`;
-          frameCount = 0;
-          lastFpsTime = now;
+      function startGameFpsTracking() {
+        const ruffleTag = document.querySelector("ruffle-embed, ruffle-object, ruffle-player");
+        if (!ruffleTag) return;
+
+        const shadowRoot = ruffleTag.shadowRoot || ruffleTag;
+        const canvas = shadowRoot.querySelector("canvas");
+
+        if (!canvas) {
+          setTimeout(startGameFpsTracking, 200);
+          return;
         }
-        if (fpsActive) {
-          fpsAnimationId = requestAnimationFrame(updateFPS);
+
+        const gl = canvas.getContext("webgl2") || canvas.getContext("webgl") || canvas.getContext("2d");
+        
+        if (gl && !canvas.dataset.fpsHooked) {
+          canvas.dataset.fpsHooked = "true";
+
+          if (gl.drawArrays) {
+            const origDrawArrays = gl.drawArrays.bind(gl);
+            gl.drawArrays = function(...args) {
+              if (fpsActive) realGameFrames++;
+              return origDrawArrays(...args);
+            };
+          } else if (gl.drawElements) {
+            const origDrawElements = gl.drawElements.bind(gl);
+            gl.drawElements = function(...args) {
+              if (fpsActive) realGameFrames++;
+              return origDrawElements(...args);
+            };
+          }
         }
+
+        fpsIntervalId = setInterval(() => {
+          if (fpsActive) {
+            const estimatedFps = Math.min(Math.round(realGameFrames / 2), 60); 
+            fpsCounter.textContent = `FPS: ${realGameFrames > 0 ? estimatedFps : 0}`;
+            realGameFrames = 0;
+          }
+        }, 1000);
       }
 
       fpsBtn.addEventListener("click", () => {
         fpsActive = !fpsActive;
         fpsCounter.classList.toggle("active", fpsActive);
         fpsBtn.style.color = fpsActive ? "var(--accent-color)" : "var(--text-color)";
+
         if (fpsActive) {
-          frameCount = 0;
-          lastFpsTime = performance.now();
-          updateFPS();
-        } else if (fpsAnimationId) {
-          cancelAnimationFrame(fpsAnimationId);
+          realGameFrames = 0;
+          startGameFpsTracking();
+        } else {
+          if (fpsIntervalId) clearInterval(fpsIntervalId);
         }
       });
 
       /* --- GAMEPAD MAPPER LOGIC --- */
-      // Default XInput / SDL Binds to Keyboard Events
       const defaultBinds = [
         { label: "Button A (Jump/Action)", padIndex: 0, key: "Space", code: "Space" },
         { label: "Button B (Attack/Cancel)", padIndex: 1, key: "x", code: "KeyX" },
