@@ -130,12 +130,13 @@
       transform: translateY(0);
       pointer-events: auto;
       
-      /* Entrance timing: Requires a intentional 150ms hover at the bottom edge before sliding in */
+      /* Entrance timing: Requires hover at bottom edge before sliding in */
       transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
     }
 
     .control-group {
       display: flex;
+      align-items: center;
       gap: 10px;
     }
 
@@ -162,6 +163,54 @@
 
     .control-btn:focus {
       outline: none;
+    }
+
+    /* Volume Control Styling */
+    .volume-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background-color: rgba(255, 255, 255, 0.03);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+
+    .volume-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 75px;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.2);
+      outline: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .volume-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .volume-slider::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border: none;
+      border-radius: 50%;
+      background: var(--accent-color);
+      cursor: pointer;
+      transition: transform 0.1s ease;
     }
 
     .player-wrapper:fullscreen {
@@ -225,7 +274,13 @@
       <div class="control-group">
         <button class="control-btn" id="play-pause-btn">Pause</button>
         <button class="control-btn" id="reload-btn">Restart</button>
+        
+        <div class="volume-container">
+          <button class="control-btn" id="mute-btn" style="padding: 4px 8px; border: none; background: transparent;">🔊</button>
+          <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.05" value="1">
+        </div>
       </div>
+      
       <div class="control-group">
         <button class="control-btn" id="fs-btn">Fullscreen</button>
       </div>
@@ -240,9 +295,13 @@
       const fsBtn = document.getElementById("fs-btn");
       const playPauseBtn = document.getElementById("play-pause-btn");
       const reloadBtn = document.getElementById("reload-btn");
+      
+      const muteBtn = document.getElementById("mute-btn");
+      const volumeSlider = document.getElementById("volume-slider");
 
       let isPaused = false;
       let isRatioApplied = false;
+      let previousVolume = 1;
 
       function getRufflePlayer() {
         const obj = document.getElementById("flash-container");
@@ -299,11 +358,41 @@
         }
       }
 
+      function updateVolume(val) {
+        const player = getRufflePlayer();
+        if (player) {
+          player.volume = val;
+        }
+        volumeSlider.value = val;
+
+        if (val == 0) {
+          muteBtn.textContent = "🔇";
+        } else if (val < 0.5) {
+          muteBtn.textContent = "🔉";
+        } else {
+          muteBtn.textContent = "🔊";
+        }
+      }
+
+      volumeSlider.addEventListener("input", (e) => {
+        const val = parseFloat(e.target.value);
+        updateVolume(val);
+        if (val > 0) previousVolume = val;
+      });
+
+      muteBtn.addEventListener("click", () => {
+        muteBtn.blur();
+        if (volumeSlider.value > 0) {
+          previousVolume = volumeSlider.value;
+          updateVolume(0);
+        } else {
+          updateVolume(previousVolume || 1);
+        }
+      });
+
       document.addEventListener("mousemove", (e) => {
         const wrapperBounds = wrapper.getBoundingClientRect();
         const barBounds = controlBar.getBoundingClientRect();
-        
-        // Strict 10px activation zone at the very bottom edge
         const triggerZoneHeight = 10;
 
         const distanceToBottom = wrapperBounds.bottom - e.clientY;
