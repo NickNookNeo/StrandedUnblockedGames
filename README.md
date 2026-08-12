@@ -3,8 +3,8 @@ Games
 [Flash Classics!](https)
 
 
-[Baldi's Basics](/StrandedUnblockedGames/Baldi)
+[Baldi's Basics](/Baldi)
 
-[Super Mario 64](/StrandedUnblockedGames/Mario64)
+[Super Mario 64](/Mario64)
 
-[Backrooms](/nicknookneo.github.io/StrandedUnblockedGames/Backrooms)
+[Backrooms](/StrandedUnblockedGames/Backrooms)
