@@ -38,7 +38,6 @@
       align-items: center;
       justify-content: space-between;
       margin-bottom: 1.5rem;
-      transition: max-width 0.3s ease;
     }
 
     .back-btn {
@@ -78,7 +77,6 @@
       overflow: hidden;
       border: 1px solid var(--border-color);
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
-      transition: max-width 0.3s ease;
     }
 
     .player-container {
@@ -112,7 +110,7 @@
       padding: 12px 20px;
       border-top: 1px solid var(--border-color);
       transform: translateY(100%);
-      transition: transform 0.1s linear; /* Instant response */
+      transition: transform 0.1s linear;
       z-index: 30;
     }
 
@@ -217,14 +215,14 @@
     window.addEventListener("DOMContentLoaded", () => {
       const wrapper = document.getElementById("player-wrapper");
       const playerContainer = document.getElementById("player-container");
-      const header = document.getElementById("header");
       const controlBar = document.getElementById("control-bar");
       const fsBtn = document.getElementById("fs-btn");
       const playPauseBtn = document.getElementById("play-pause-btn");
       const reloadBtn = document.getElementById("reload-btn");
 
-      let isPaused = false; // Internal tracking variable to prevent fight with loop
+      let isPaused = false;
       let hideTimeout = null;
+      let dimensionsApplied = false;
 
       function getRufflePlayer() {
         const obj = document.getElementById("flash-container");
@@ -237,11 +235,11 @@
       }
 
       function applyDimensions(width, height) {
-        if (!width || !height) return;
+        if (!width || !height || dimensionsApplied) return;
         
+        // Sets aspect ratio without constraining or shrinking element max-widths
         playerContainer.style.aspectRatio = `${width} / ${height}`;
-        wrapper.style.maxWidth = `${width}px`;
-        header.style.maxWidth = `${width}px`;
+        dimensionsApplied = true;
       }
 
       const observer = new MutationObserver(() => {
@@ -261,7 +259,7 @@
 
       observer.observe(document.body, { childList: true, subtree: true });
 
-      /* Fast & Responsive Control Bar Toggle */
+      /* Fast Bottom Edge Triggering */
       function hideBarImmediately() {
         clearTimeout(hideTimeout);
         controlBar.classList.remove("visible");
@@ -269,7 +267,7 @@
 
       document.addEventListener("mousemove", (e) => {
         const wrapperBounds = wrapper.getBoundingClientRect();
-        const triggerThreshold = 8; // Must hit within 8px of absolute bottom edge
+        const triggerThreshold = 8;
 
         const isAtBottomWindow = (window.innerHeight - e.clientY) <= triggerThreshold;
         const isAtBottomWrapper = (wrapperBounds.bottom - e.clientY) <= triggerThreshold && 
@@ -289,16 +287,24 @@
           clearTimeout(hideTimeout);
           hideTimeout = setTimeout(() => {
             controlBar.classList.remove("visible");
-          }, 50); // Snappy 50ms hiding
+          }, 50);
         }
       });
 
-      // Instantly close bar when mouse exits the player window
       wrapper.addEventListener("mouseleave", hideBarImmediately);
       window.addEventListener("mouseleave", hideBarImmediately);
 
-      /* Manual Play/Pause state handling */
-      playPauseBtn.addEventListener("click", () => {
+      /* Catch clicks on Ruffle's built-in overlay to sync custom button */
+      playerContainer.addEventListener("click", () => {
+        if (isPaused) {
+          isPaused = false;
+          playPauseBtn.textContent = "Pause";
+        }
+      });
+
+      /* Play/Pause Button Logic */
+      playPauseBtn.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevents playerContainer click handler from firing
         const player = getRufflePlayer();
         if (!player) return;
 
