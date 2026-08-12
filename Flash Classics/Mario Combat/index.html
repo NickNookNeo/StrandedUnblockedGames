@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flash Content Player</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f4f4f9;
+    }
+
+    .player-container {
+      width: 800px;
+      height: 600px;
+      background-color: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    #flash-container {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+
+  <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+</head>
+<body>
+
+  <h1>Flash Player Container</h1>
+
+  <div class="player-container">
+    <object id="flash-container" type="application/x-shockwave-flash" data="Mario_Combat.swf">
+      <p>Unable to load Flash content.</p>
+    </object>
+  </div>
+
+  <script>
+    window.RufflePlayer = window.RufflePlayer || {};
+    window.addEventListener("DOMContentLoaded", () => {
+      const ruffle = window.RufflePlayer.newest();
+      const player = ruffle.createPlayer();
+      const container = document.getElementById("flash-container");
+    });
+  </script>
+
+</body>
+</html>
