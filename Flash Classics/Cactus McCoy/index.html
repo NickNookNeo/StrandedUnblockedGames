@@ -104,9 +104,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: transparent !important;
+      background: var(--bg-gradient) !important;
       border-radius: 12px;
-      overflow: hidden;
+      overflow: hidden !important;
       border: 1px solid var(--border-color);
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
     }
@@ -118,6 +118,7 @@
       align-items: center !important;
       justify-content: center !important;
       background: transparent !important;
+      overflow: hidden !important;
       --ruffle-background-color: transparent !important;
     }
 
@@ -125,6 +126,13 @@
     ruffle-embed::part(container),
     ruffle-object::part(container) {
       background: transparent !important;
+      overflow: hidden !important;
+    }
+
+    ruffle-player::part(canvas),
+    ruffle-embed::part(canvas),
+    ruffle-object::part(canvas) {
+      overflow: hidden !important;
     }
 
     .player-wrapper:fullscreen,
@@ -136,6 +144,7 @@
       border-radius: 0 !important;
       border: none !important;
       background: var(--bg-gradient) !important;
+      overflow: hidden !important;
     }
 
     .control-bar {
@@ -257,7 +266,7 @@
       font-family: monospace;
       font-size: 0.8rem;
       cursor: pointer;
-      min-width: 110px;
+      min-width: 120px;
       text-align: center;
     }
 
@@ -282,7 +291,7 @@
     window.RufflePlayer.config = {
       "scale": "showAll",
       "forceScale": false,
-      "letterbox": "off",
+      "letterbox": "on",
       "wmode": "transparent",
       "backgroundColor": null
     };
@@ -326,39 +335,39 @@
   <div class="modal-overlay" id="kb-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>Keyboard Remapping (Key ➔ Input)</h3>
+        <h3>Keyboard Binds</h3>
         <button class="close-modal-btn" id="close-kb">&times;</button>
       </div>
       <div class="bind-row">
-        <span>Output: Left Arrow</span>
+        <span>Left Arrow Emulates</span>
         <button class="bind-key kb-bind" data-target="ArrowLeft">ArrowLeft</button>
       </div>
       <div class="bind-row">
-        <span>Output: Right Arrow</span>
+        <span>Right Arrow Emulates</span>
         <button class="bind-key kb-bind" data-target="ArrowRight">ArrowRight</button>
       </div>
       <div class="bind-row">
-        <span>Output: Up Arrow</span>
+        <span>Up Arrow Emulates</span>
         <button class="bind-key kb-bind" data-target="ArrowUp">ArrowUp</button>
       </div>
       <div class="bind-row">
-        <span>Output: Down Arrow</span>
+        <span>Down Arrow Emulates</span>
         <button class="bind-key kb-bind" data-target="ArrowDown">ArrowDown</button>
       </div>
       <div class="bind-row">
-        <span>Output: Key 'A'</span>
+        <span>Key 'A' Emulates</span>
         <button class="bind-key kb-bind" data-target="KeyA">A</button>
       </div>
       <div class="bind-row">
-        <span>Output: Key 'S'</span>
+        <span>Key 'S' Emulates</span>
         <button class="bind-key kb-bind" data-target="KeyS">S</button>
       </div>
       <div class="bind-row">
-        <span>Output: Key 'D'</span>
+        <span>Key 'D' Emulates</span>
         <button class="bind-key kb-bind" data-target="KeyD">D</button>
       </div>
       <div class="bind-row">
-        <span>Output: Spacebar</span>
+        <span>Spacebar Emulates</span>
         <button class="bind-key kb-bind" data-target="Space">Space</button>
       </div>
     </div>
@@ -367,32 +376,32 @@
   <div class="modal-overlay" id="mapper-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>Controller Remapping (Button ➔ Input)</h3>
+        <h3>Controller Binds</h3>
         <button class="close-modal-btn" id="close-mapper">&times;</button>
       </div>
       <p style="font-size: 0.8rem; color: #38bdf8; margin: 0;" id="pad-status">Searching for controller...</p>
       <div class="bind-row">
-        <span>Button A ➔ Output</span>
+        <span>Button A Emulates Key</span>
         <button class="bind-key pad-bind" data-pad-btn="0">A</button>
       </div>
       <div class="bind-row">
-        <span>Button B ➔ Output</span>
+        <span>Button B Emulates Key</span>
         <button class="bind-key pad-bind" data-pad-btn="1">S</button>
       </div>
       <div class="bind-row">
-        <span>Button X ➔ Output</span>
+        <span>Button X Emulates Key</span>
         <button class="bind-key pad-bind" data-pad-btn="2">A</button>
       </div>
       <div class="bind-row">
-        <span>Button Y ➔ Output</span>
+        <span>Button Y Emulates Key</span>
         <button class="bind-key pad-bind" data-pad-btn="3">D</button>
       </div>
       <div class="bind-row">
-        <span>Bumper LB ➔ Output</span>
+        <span>Left Bumper LB Emulates</span>
         <button class="bind-key pad-bind" data-pad-btn="4">ArrowLeft</button>
       </div>
       <div class="bind-row">
-        <span>Bumper RB ➔ Output</span>
+        <span>Right Bumper RB Emulates</span>
         <button class="bind-key pad-bind" data-pad-btn="5">ArrowRight</button>
       </div>
     </div>
