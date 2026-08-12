@@ -112,11 +112,10 @@
       padding: 12px 20px;
       border-top: 1px solid var(--border-color);
       transform: translateY(100%);
-      transition: transform 0.25s ease-out;
+      transition: transform 0.15s ease-out; /* Fast hide speed */
       z-index: 30;
     }
 
-    /* Shown dynamically via JS */
     .control-bar.visible {
       transform: translateY(0);
     }
@@ -147,7 +146,7 @@
       transform: scale(0.95);
     }
 
-    /* FULLSCREEN THEMED GRADIENT BORDERS */
+    /* Fullscreen Mode */
     .player-wrapper:fullscreen {
       width: 100vw !important;
       height: 100vh !important;
@@ -226,7 +225,7 @@
 
       function getRufflePlayer() {
         const obj = document.getElementById("flash-container");
-        if (obj && (typeof obj.pause === "function" || obj.metadata)) return obj;
+        if (obj && (typeof obj.pause === "function" || obj.metadata || obj.shadowRoot)) return obj;
 
         const ruffleTag = document.querySelector("ruffle-embed, ruffle-object, ruffle-player");
         if (ruffleTag) return ruffleTag;
@@ -259,12 +258,12 @@
 
       observer.observe(document.body, { childList: true, subtree: true });
 
-      /* Very strict bottom edge triggering + grace delay */
+      /* Precise Bottom Edge Mouse Detection */
       let hideTimeout = null;
 
       document.addEventListener("mousemove", (e) => {
         const wrapperBounds = wrapper.getBoundingClientRect();
-        const triggerThreshold = 8; // Must hit within 8px of absolute bottom edge
+        const triggerThreshold = 8; // Pixels from bottom edge
 
         const isAtBottomWindow = (window.innerHeight - e.clientY) <= triggerThreshold;
         const isAtBottomWrapper = (wrapperBounds.bottom - e.clientY) <= triggerThreshold && 
@@ -273,7 +272,7 @@
 
         const barBounds = controlBar.getBoundingClientRect();
         const isHoveringBar = e.clientX >= barBounds.left && 
-                              e.clientX >= barBounds.right === false && 
+                              e.clientX <= barBounds.right && 
                               e.clientY >= barBounds.top && 
                               e.clientY <= barBounds.bottom;
 
@@ -281,29 +280,34 @@
           clearTimeout(hideTimeout);
           controlBar.classList.add("visible");
         } else {
-          // Delay hiding so user can interact with bar
           clearTimeout(hideTimeout);
           hideTimeout = setTimeout(() => {
             controlBar.classList.remove("visible");
-          }, 500);
+          }, 150); // Snappy hide transition
         }
       });
 
+      /* Robust Play/Pause Detection */
       function isPlayerPaused(player) {
         if (!player) return false;
-        if (typeof player.isPlaying === "function") {
-          return !player.isPlaying();
-        }
+        
+        // Method 1: Check Ruffle shadowRoot play overlay visibility
         if (player.shadowRoot) {
           const overlay = player.shadowRoot.querySelector("#play-overlay");
-          if (overlay && overlay.style.display !== "none" && overlay.style.display !== "") {
+          if (overlay && getComputedStyle(overlay).display !== "none") {
             return true;
           }
         }
+
+        // Method 2: Call instance method
+        if (typeof player.isPlaying === "function") {
+          return !player.isPlaying();
+        }
+
         return false;
       }
 
-      /* Automatic state sync loop for Play/Pause status */
+      // Continuous loop syncing button UI state with actual SWF state
       setInterval(() => {
         const player = getRufflePlayer();
         if (!player) return;
@@ -314,7 +318,7 @@
         if (playPauseBtn.textContent !== expectedText) {
           playPauseBtn.textContent = expectedText;
         }
-      }, 250);
+      }, 150);
 
       playPauseBtn.addEventListener("click", () => {
         const player = getRufflePlayer();
@@ -324,8 +328,10 @@
 
         if (paused) {
           if (typeof player.play === "function") player.play();
+          playPauseBtn.textContent = "Pause";
         } else {
           if (typeof player.pause === "function") player.pause();
+          playPauseBtn.textContent = "Play";
         }
       });
 
@@ -343,6 +349,7 @@
             setTimeout(() => container.setAttribute("data", currentData), 10);
           }
         }
+        playPauseBtn.textContent = "Pause";
       });
 
       fsBtn.addEventListener("click", () => {
