@@ -122,14 +122,13 @@
       flex: 1;
       min-height: 0;
       margin: 0 auto;
-      background: var(--ambient-gradient) !important;
+      background: #000000 !important;
       border-radius: 12px;
       overflow: hidden;
       border: 1px solid var(--border-color);
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(56, 189, 248, 0.05);
     }
 
-    /* Flexible Player Container */
     .player-container {
       display: flex;
       justify-content: center;
@@ -137,22 +136,18 @@
       position: relative;
       overflow: hidden;
       margin: auto;
-      transition: all 0.15s ease-out;
+      background: #000000 !important;
     }
 
-    /* --- STRICT Scaling Mode Classes --- */
-
-    /* 1. FIT MODE: Scaled dynamically to fill space while strictly preserving 4:3 */
+    /* Scaling Classes */
     .scale-fit {
       width: 100% !important;
       height: 100% !important;
       max-width: 100% !important;
       max-height: 100% !important;
       aspect-ratio: 4 / 3 !important;
-      object-fit: contain;
     }
 
-    /* 2. STRETCH MODE: Ignores aspect ratio and expands to fill wrapper edge-to-edge */
     .scale-stretch {
       width: 100% !important;
       height: 100% !important;
@@ -161,20 +156,20 @@
       aspect-ratio: auto !important;
     }
 
-    /* 3. ORIGINAL MODE: Clean fixed 800x600 canvas without shadow DOM clipping */
     .scale-original {
       width: 800px !important;
       height: 600px !important;
       max-width: 100% !important;
       max-height: 100% !important;
-      aspect-ratio: 4 / 3 !important;
     }
 
-    /* Ensure Ruffle scales smoothly within the CSS container bounds */
+    /* Eliminate canvas background white flash */
     #flash-container, ruffle-embed, ruffle-object, ruffle-player {
       width: 100% !important;
       height: 100% !important;
       display: block !important;
+      background-color: #000000 !important;
+      --ruffle-background-color: #000000 !important;
     }
 
     .fps-counter {
@@ -198,7 +193,7 @@
       display: block;
     }
 
-    /* Floating Hover Control Bar */
+    /* Fixed Auto-Hiding Control Bar */
     .control-bar {
       position: absolute;
       bottom: 0;
@@ -212,13 +207,13 @@
       padding: 10px 16px;
       border-top: 1px solid var(--border-color);
       transform: translateY(100%);
-      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform 0.25s ease-in-out;
       z-index: 50;
-      pointer-events: auto;
     }
 
-    .control-bar.visible {
-      transform: translateY(0);
+    .control-bar.visible,
+    .control-bar:hover {
+      transform: translateY(0) !important;
     }
 
     .control-group {
@@ -370,7 +365,7 @@
       cursor: pointer;
     }
 
-    /* FULLSCREEN & BACKDROP STYLES */
+    /* Fullscreen Handling */
     ::backdrop {
       background: var(--ambient-gradient) !important;
     }
@@ -416,9 +411,10 @@
     window.RufflePlayer = window.RufflePlayer || {};
     window.RufflePlayer.config = {
       "scale": "showAll",
-      "letterbox": "off",
+      "letterbox": "on",
       "forceScale": true,
       "forceAlign": true,
+      "backgroundColor": "#000000",
       "wmode": "opaque"
     };
   </script>
@@ -446,6 +442,7 @@
       <object id="flash-container" type="application/x-shockwave-flash" data="cactusmccoy.swf">
         <param name="scale" value="showAll" />
         <param name="wmode" value="opaque" />
+        <param name="bgcolor" value="#000000" />
         <p>Unable to load Flash content.</p>
       </object>
     </div>
@@ -557,39 +554,27 @@
         applyScaleMode(mode);
       });
 
-      /* Robust Control Bar Mouse-Tracking Logic */
-      let hideTimeout = null;
-
-      function showControlBar() {
-        controlBar.classList.add("visible");
-        if (hideTimeout) clearTimeout(hideTimeout);
-      }
-
-      function scheduleHideControlBar() {
-        if (hideTimeout) clearTimeout(hideTimeout);
-        hideTimeout = setTimeout(() => {
-          controlBar.classList.remove("visible");
-        }, 2000);
-      }
+      /* Control Bar Hide/Show Timer */
+      let mouseTimer = null;
 
       wrapper.addEventListener("mousemove", (e) => {
         const rect = wrapper.getBoundingClientRect();
-        const distanceFromBottom = rect.bottom - e.clientY;
+        const yFromBottom = rect.bottom - e.clientY;
 
-        if (distanceFromBottom <= 90) {
-          showControlBar();
-          scheduleHideControlBar();
-        } else if (!controlBar.matches(':hover')) {
-          scheduleHideControlBar();
+        // Reveal when within 60px of the bottom edge
+        if (yFromBottom <= 60) {
+          controlBar.classList.add("visible");
+          if (mouseTimer) clearTimeout(mouseTimer);
+          mouseTimer = setTimeout(() => {
+            if (!controlBar.matches(':hover')) {
+              controlBar.classList.remove("visible");
+            }
+          }, 1500);
         }
       });
 
-      controlBar.addEventListener("mouseenter", () => {
-        showControlBar();
-      });
-
-      controlBar.addEventListener("mouseleave", () => {
-        scheduleHideControlBar();
+      wrapper.addEventListener("mouseleave", () => {
+        controlBar.classList.remove("visible");
       });
 
       function toggleFullscreen() {
