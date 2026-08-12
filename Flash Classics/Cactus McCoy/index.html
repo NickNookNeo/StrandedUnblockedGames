@@ -242,7 +242,7 @@
 
     /* Modal / Mapper Overlay */
     .modal-overlay {
-      position: fixed;
+      position: absolute;
       inset: 0;
       background: rgba(5, 8, 17, 0.85);
       backdrop-filter: blur(8px);
@@ -438,21 +438,21 @@
         <button class="control-btn" id="fs-btn">Fullscreen</button>
       </div>
     </div>
-  </div>
 
-  <!-- Gamepad Mapping Modal -->
-  <div class="modal-overlay" id="mapper-modal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3>Gamepad Mapper</h3>
-        <button class="close-modal-btn" id="close-modal">&times;</button>
-      </div>
-      <div id="gamepad-status" style="font-size: 0.85rem; color: #94a3b8;">No Gamepad Detected. Press any button on controller.</div>
-      <div class="mapper-list" id="mapper-list">
-        <!-- Rows dynamically injected -->
-      </div>
-      <div class="modal-footer">
-        <button class="reset-btn" id="reset-binds-btn">Reset Binds</button>
+    <!-- Gamepad Mapping Modal (Placed inside player-wrapper for Fullscreen compatibility) -->
+    <div class="modal-overlay" id="mapper-modal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Gamepad Mapper</h3>
+          <button class="close-modal-btn" id="close-modal">&times;</button>
+        </div>
+        <div id="gamepad-status" style="font-size: 0.85rem; color: #94a3b8;">No Gamepad Detected. Press any button on controller.</div>
+        <div class="mapper-list" id="mapper-list">
+          <!-- Rows dynamically injected -->
+        </div>
+        <div class="modal-footer">
+          <button class="reset-btn" id="reset-binds-btn">Reset Binds</button>
+        </div>
       </div>
     </div>
   </div>
@@ -580,12 +580,10 @@
 
       resetBindsBtn.addEventListener("click", () => {
         if (!isResetConfirming) {
-          // First click: prompt double-warning
           isResetConfirming = true;
           resetBindsBtn.textContent = "Are you sure you want to set all to default?";
           resetBindsBtn.classList.add("confirm-state");
         } else {
-          // Second click: execute reset
           binds = JSON.parse(JSON.stringify(defaultBinds));
           localStorage.removeItem("flash_gamepad_binds");
           listeningIndex = -1;
@@ -735,7 +733,7 @@
         if (val == 0) {
           muteBtn.textContent = "🔇";
         } else if (val < 0.5) {
-          muteBtn.textContent = "🔉";
+          muteBtn.textContent = "m";
         } else {
           muteBtn.textContent = "🔊";
         }
