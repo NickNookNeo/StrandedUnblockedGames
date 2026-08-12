@@ -99,7 +99,7 @@
       width: 100%;
     }
 
-    /* Main Container */
+    /* Main Container Frame */
     .player-wrapper {
       position: relative;
       width: 100%;
@@ -115,12 +115,15 @@
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
     }
 
-    /* Inner canvas frame retains solid black letterboxing */
+    /* Ruffle Embed Styling & Background Overrides */
     #flash-container, ruffle-embed, ruffle-object, ruffle-player {
       width: 100% !important;
       height: 100% !important;
-      display: block !important;
-      background-color: #000000 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      background: transparent !important;
+      --ruffle-background-color: transparent !important;
     }
 
     .fps-counter {
@@ -212,7 +215,7 @@
       cursor: pointer;
     }
 
-    /* Modals - Functional Overlay System */
+    /* Modal Overlay System */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -237,11 +240,11 @@
       border: 1px solid var(--border-color);
       border-radius: 12px;
       width: 90%;
-      max-width: 480px;
+      max-width: 500px;
       padding: 1.25rem;
       display: flex;
       flex-direction: column;
-      gap: 0.85rem;
+      gap: 1rem;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.9);
     }
 
@@ -265,6 +268,43 @@
       font-size: 1.4rem;
       cursor: pointer;
       line-height: 1;
+    }
+
+    .bind-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+    }
+
+    .bind-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .bind-key {
+      padding: 4px 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--accent-color);
+      color: var(--accent-color);
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .bind-key.listening {
+      background: var(--accent-color);
+      color: #000000;
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.6; }
+      to { opacity: 1; }
     }
 
     /* Fullscreen & Theater Overrides */
@@ -305,9 +345,9 @@
     window.RufflePlayer = window.RufflePlayer || {};
     window.RufflePlayer.config = {
       "scale": "showAll",
-      "forceScale": true,
-      "forceAlign": true,
-      "backgroundColor": "#000000",
+      "forceScale": false,
+      "forceAlign": false,
+      "letterbox": "on",
       "wmode": "opaque"
     };
   </script>
@@ -333,7 +373,6 @@
     <object id="flash-container" type="application/x-shockwave-flash" data="cactusmccoy.swf">
       <param name="scale" value="showAll" />
       <param name="wmode" value="opaque" />
-      <param name="bgcolor" value="#000000" />
       <p>Unable to load Flash content.</p>
     </object>
 
@@ -355,25 +394,54 @@
     </div>
   </div>
 
-  <!-- Keyboard Binds Modal -->
+  <!-- Interactive Keyboard Mapping Modal -->
   <div class="modal-overlay" id="kb-modal">
     <div class="modal-card">
       <div class="modal-header">
         <h3>Keyboard Rebinding</h3>
         <button class="close-modal-btn" id="close-kb-modal">&times;</button>
       </div>
-      <p style="font-size: 0.85rem; color: #94a3b8; margin: 0;">Default Flash controls active. Click outside or press close to exit.</p>
+      <div class="bind-row">
+        <span class="bind-label">Move Left</span>
+        <button class="bind-key" data-action="left">LeftArrow</button>
+      </div>
+      <div class="bind-row">
+        <span class="bind-label">Move Right</span>
+        <button class="bind-key" data-action="right">RightArrow</button>
+      </div>
+      <div class="bind-row">
+        <span class="bind-label">Jump / Action</span>
+        <button class="bind-key" data-action="jump">A</button>
+      </div>
+      <div class="bind-row">
+        <span class="bind-label">Attack</span>
+        <button class="bind-key" data-action="attack">S</button>
+      </div>
     </div>
   </div>
 
-  <!-- Controller Binds Modal -->
+  <!-- Interactive Controller Mapping Modal -->
   <div class="modal-overlay" id="mapper-modal">
     <div class="modal-card">
       <div class="modal-header">
         <h3>Controller Rebinding</h3>
         <button class="close-modal-btn" id="close-mapper-modal">&times;</button>
       </div>
-      <p style="font-size: 0.85rem; color: #94a3b8; margin: 0;">Press any button on a connected controller to begin mapping.</p>
+      <p style="font-size: 0.85rem; color: #94a3b8; margin: 0;" id="controller-status">
+        Checking gamepad connection...
+      </p>
+      <div class="bind-row">
+        <span class="bind-label">D-Pad / Left Stick</span>
+        <button class="bind-key" id="pad-move">Connected</button>
+      </div>
+      <div class="bind-row">
+        <span class="bind-label">Jump</span>
+        <button class="bind-key" data-pad="0">Button 0 (A)</button>
+      </div>
+      <div class="bind-row">
+        <span class="bind-label">Attack</span>
+        <button class="bind-key" data-pad="2">Button 2 (X)</button>
+      </div>
     </div>
   </div>
 
@@ -386,15 +454,17 @@
       const playPauseBtn = document.getElementById("play-pause-btn");
       const reloadBtn = document.getElementById("reload-btn");
 
-      /* Modal Elements */
+      /* Modals */
       const kbBtn = document.getElementById("kb-btn");
       const mapperBtn = document.getElementById("mapper-btn");
       const kbModal = document.getElementById("kb-modal");
       const mapperModal = document.getElementById("mapper-modal");
       const closeKbModal = document.getElementById("close-kb-modal");
       const closeMapperModal = document.getElementById("close-mapper-modal");
+      const controllerStatus = document.getElementById("controller-status");
 
       let isPaused = false;
+      let activeListeningBtn = null;
 
       function getRufflePlayer() {
         const obj = document.getElementById("flash-container");
@@ -451,19 +521,59 @@
         if (player && player.reload) player.reload();
       });
 
-      /* Functional Modal Handlers */
+      /* Modal Display Controls */
       kbBtn.addEventListener("click", () => kbModal.classList.add("open"));
       closeKbModal.addEventListener("click", () => kbModal.classList.remove("open"));
 
-      mapperBtn.addEventListener("click", () => mapperModal.classList.add("open"));
+      mapperBtn.addEventListener("click", () => {
+        mapperModal.classList.add("open");
+        checkGamepads();
+      });
       closeMapperModal.addEventListener("click", () => mapperModal.classList.remove("open"));
 
-      /* Close modals when clicking backdrop */
       [kbModal, mapperModal].forEach(modal => {
         modal.addEventListener("click", (e) => {
           if (e.target === modal) modal.classList.remove("open");
         });
       });
+
+      /* Interactive Key Rebinding Capture */
+      document.querySelectorAll(".bind-key").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          if (activeListeningBtn) activeListeningBtn.classList.remove("listening");
+          activeListeningBtn = e.target;
+          activeListeningBtn.classList.add("listening");
+          activeListeningBtn.textContent = "Press key...";
+        });
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (activeListeningBtn && kbModal.classList.contains("open")) {
+          e.preventDefault();
+          activeListeningBtn.textContent = e.key === " " ? "Space" : e.key;
+          activeListeningBtn.classList.remove("listening");
+          activeListeningBtn = null;
+        }
+      });
+
+      /* Controller Connection Listener */
+      function checkGamepads() {
+        const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+        let connected = false;
+        for (let i = 0; i < gamepads.length; i++) {
+          if (gamepads[i]) {
+            controllerStatus.textContent = `Active Gamepad: ${gamepads[i].id}`;
+            connected = true;
+            break;
+          }
+        }
+        if (!connected) {
+          controllerStatus.textContent = "No controller detected. Connect a gamepad and press any button.";
+        }
+      }
+
+      window.addEventListener("gamepadconnected", checkGamepads);
+      window.addEventListener("gamepaddisconnected", checkGamepads);
     });
   </script>
 
