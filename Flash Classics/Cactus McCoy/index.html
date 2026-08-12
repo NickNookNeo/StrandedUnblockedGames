@@ -18,6 +18,7 @@
       --accent-glow: rgba(56, 189, 248, 0.35);
       --danger-color: #ef4444;
       --border-color: rgba(255, 255, 255, 0.1);
+      --ambient-gradient: radial-gradient(circle at center, #1e293b 0%, #050811 100%);
     }
 
     html, body {
@@ -26,20 +27,20 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
+      background: var(--ambient-gradient);
+      background-attachment: fixed;
+      color: var(--text-color);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: radial-gradient(circle at center, #1e293b 0%, #050811 100%);
-      background-attachment: fixed;
-      color: var(--text-color);
       padding: 0.75rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      user-select: none;
-      -webkit-user-select: none;
     }
 
     /* Header Layout */
@@ -109,7 +110,7 @@
       width: 100%;
     }
 
-    /* Player Wrapper & Ambient Background */
+    /* Player Container Wrapper */
     .player-wrapper {
       position: relative;
       display: flex;
@@ -121,7 +122,7 @@
       flex: 1;
       min-height: 0;
       margin: 0 auto;
-      background: radial-gradient(circle at center, #1e293b 0%, #050811 100%);
+      background: var(--ambient-gradient);
       border-radius: 12px;
       overflow: hidden;
       border: 1px solid var(--border-color);
@@ -138,29 +139,10 @@
       overflow: hidden;
     }
 
-    /* Ruffle Sizing Modes */
-    .scale-fit ruffle-player,
-    .scale-fit #flash-container {
-      width: 100% !important;
-      height: 100% !important;
-    }
-
-    .scale-stretch ruffle-player,
-    .scale-stretch #flash-container {
-      width: 100% !important;
-      height: 100% !important;
-    }
-
-    /* Direct scale constraint prevents Original from collapsing to 0x0 */
-    .scale-original ruffle-player,
-    .scale-original #flash-container {
-      width: 800px !important;
-      height: 600px !important;
-      max-width: 100% !important;
-      max-height: 100% !important;
-    }
-
+    /* Keep Ruffle flexible and responsive inside stage wrapper */
     #flash-container, ruffle-embed, ruffle-object, ruffle-player {
+      width: 100% !important;
+      height: 100% !important;
       display: block !important;
     }
 
@@ -185,7 +167,7 @@
       display: block;
     }
 
-    /* Bottom Control Bar Fixes */
+    /* Floating Hover Control Bar */
     .control-bar {
       position: absolute;
       bottom: 0;
@@ -208,7 +190,6 @@
       transform: translateY(0);
     }
 
-    /* Hover detection zone overlay at wrapper bottom */
     .hover-trigger-zone {
       position: absolute;
       bottom: 0;
@@ -286,7 +267,121 @@
       cursor: pointer;
     }
 
-    /* Fullscreen & Theater Overrides */
+    /* Modal Layouts */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 8, 17, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 480px;
+      padding: 1.25rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 0.5rem;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: var(--accent-color);
+      font-size: 1.1rem;
+    }
+
+    .close-modal-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-color);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .mapper-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .mapper-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.03);
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+
+    .bind-btn {
+      padding: 3px 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--accent-color);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      min-width: 75px;
+      text-align: center;
+    }
+
+    .bind-btn.listening {
+      background: var(--accent-color);
+      color: #000;
+      font-weight: bold;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      border-top: 1px solid var(--border-color);
+      padding-top: 0.5rem;
+    }
+
+    .reset-btn {
+      padding: 5px 10px;
+      background-color: rgba(239, 68, 68, 0.1);
+      color: var(--danger-color);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* FULLSCREEN & BACKDROP FIX: Preserves Ambient Radial Gradient in Fullscreen */
+    ::backdrop {
+      background: var(--ambient-gradient) !important;
+    }
+
     .player-wrapper:fullscreen,
     .player-wrapper:-webkit-full-screen {
       width: 100vw !important;
@@ -297,7 +392,7 @@
       border: none !important;
       margin: 0 !important;
       padding: 0 !important;
-      background: radial-gradient(circle at center, #1e293b 0%, #050811 100%) !important;
+      background: var(--ambient-gradient) !important;
     }
 
     body.theater-mode {
@@ -349,7 +444,7 @@
   <div class="player-wrapper" id="player-wrapper" tabindex="0">
     <div class="fps-counter" id="fps-counter">FPS: 00</div>
     
-    <div class="player-container scale-fit" id="player-container">
+    <div class="player-container" id="player-container">
       <object id="flash-container" type="application/x-shockwave-flash" data="cactusmccoy.swf">
         <param name="scale" value="showAll" />
         <p>Unable to load Flash content.</p>
@@ -375,22 +470,75 @@
         <button class="control-btn" id="fs-btn">Fullscreen</button>
       </div>
     </div>
+
+    <!-- Controller Modal -->
+    <div class="modal-overlay" id="mapper-modal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Gamepad Mapper</h3>
+          <button class="close-modal-btn" id="close-modal">&times;</button>
+        </div>
+        <div id="gamepad-status" style="font-size: 0.8rem; color: #94a3b8;">No Gamepad Detected. Press any button on controller.</div>
+        <div class="mapper-list" id="mapper-list"></div>
+        <div class="modal-footer">
+          <button class="reset-btn" id="reset-binds-btn">Reset Binds</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keyboard Modal -->
+    <div class="modal-overlay" id="kb-modal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Keyboard Rebinding</h3>
+          <button class="close-modal-btn" id="close-kb-modal">&times;</button>
+        </div>
+        <div style="font-size: 0.8rem; color: #94a3b8;">Remap standard inputs to custom keys.</div>
+        <div class="mapper-list" id="kb-list"></div>
+        <div class="modal-footer">
+          <button class="reset-btn" id="reset-kb-btn">Reset Defaults</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       const wrapper = document.getElementById("player-wrapper");
-      const playerContainer = document.getElementById("player-container");
       const controlBar = document.getElementById("control-bar");
       const hoverZone = document.getElementById("hover-trigger-zone");
       const fsBtn = document.getElementById("fs-btn");
       const theaterBtn = document.getElementById("theater-btn");
       const scaleBtn = document.getElementById("scale-btn");
 
+      const playPauseBtn = document.getElementById("play-pause-btn");
+      const reloadBtn = document.getElementById("reload-btn");
+      const fpsBtn = document.getElementById("fps-btn");
+      const fpsCounter = document.getElementById("fps-counter");
+
+      const mapperBtn = document.getElementById("mapper-btn");
+      const mapperModal = document.getElementById("mapper-modal");
+      const closeModal = document.getElementById("close-modal");
+      const gamepadStatus = document.getElementById("gamepad-status");
+      const mapperList = document.getElementById("mapper-list");
+      const resetBindsBtn = document.getElementById("reset-binds-btn");
+
+      const kbBtn = document.getElementById("kb-btn");
+      const kbModal = document.getElementById("kb-modal");
+      const closeKbModal = document.getElementById("close-kb-modal");
+      const kbList = document.getElementById("kb-list");
+      const resetKbBtn = document.getElementById("reset-kb-btn");
+
+      const muteBtn = document.getElementById("mute-btn");
+      const volumeSlider = document.getElementById("volume-slider");
+
+      let isPaused = false;
+      let previousVolume = 1;
+
       const scaleModes = [
-        { name: "Scale: Fit", class: "scale-fit", scale: "showAll", letterbox: "on" },
-        { name: "Scale: Stretch", class: "scale-stretch", scale: "exactFit", letterbox: "off" },
-        { name: "Scale: Original", class: "scale-original", scale: "noScale", letterbox: "on" }
+        { name: "Scale: Fit", scale: "showAll", letterbox: "on" },
+        { name: "Scale: Stretch", scale: "exactFit", letterbox: "off" },
+        { name: "Scale: Original", scale: "noScale", letterbox: "off" }
       ];
       let currentScaleIdx = 0;
 
@@ -401,9 +549,6 @@
       }
 
       function applyScaleMode(mode) {
-        playerContainer.classList.remove("scale-fit", "scale-stretch", "scale-original");
-        playerContainer.classList.add(mode.class);
-
         const player = getRufflePlayer();
         if (player) {
           if (!player.config) player.config = {};
@@ -413,6 +558,7 @@
           player.setAttribute("scale", mode.scale);
           player.setAttribute("letterbox", mode.letterbox);
 
+          // Trigger internal reflow on Shadow DOM
           window.dispatchEvent(new Event("resize"));
         }
       }
@@ -425,7 +571,7 @@
         applyScaleMode(mode);
       });
 
-      /* Reliable Hover Bar Triggering */
+      /* Reliable Hover Control Bar */
       let hideTimeout = null;
 
       function showControlBar() {
@@ -441,7 +587,6 @@
 
       hoverZone.addEventListener("mouseenter", showControlBar);
       controlBar.addEventListener("mouseenter", showControlBar);
-      
       hoverZone.addEventListener("mouseleave", hideControlBar);
       controlBar.addEventListener("mouseleave", hideControlBar);
 
@@ -483,7 +628,123 @@
           applyScaleMode(scaleModes[currentScaleIdx]);
         }, 100);
       });
+
+      /* Volume & Control Bar Operations */
+      function updateVolume(val) {
+        const player = getRufflePlayer();
+        if (player) player.volume = val;
+        volumeSlider.value = val;
+        muteBtn.textContent = val == 0 ? "🔇" : (val < 0.5 ? "Dis" : "🔊");
+      }
+
+      volumeSlider.addEventListener("input", (e) => {
+        const val = parseFloat(e.target.value);
+        updateVolume(val);
+        if (val > 0) previousVolume = val;
+      });
+
+      muteBtn.addEventListener("click", () => {
+        muteBtn.blur();
+        if (volumeSlider.value > 0) {
+          previousVolume = volumeSlider.value;
+          updateVolume(0);
+        } else {
+          updateVolume(previousVolume || 1);
+        }
+      });
+
+      playPauseBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        playPauseBtn.blur();
+        const player = getRufflePlayer();
+        if (!player) return;
+
+        if (isPaused) {
+          if (typeof player.play === "function") player.play();
+          isPaused = false;
+          playPauseBtn.textContent = "Pause";
+        } else {
+          if (typeof player.pause === "function") player.pause();
+          isPaused = true;
+          playPauseBtn.textContent = "Play";
+        }
+      });
+
+      reloadBtn.addEventListener("click", () => {
+        reloadBtn.blur();
+        const player = getRufflePlayer();
+        if (!player) return;
+
+        if (typeof player.reload === "function") {
+          player.reload();
+        }
+        isPaused = false;
+        playPauseBtn.textContent = "Pause";
+      });
+
+      /* Keyboard & Gamepad Modal Logic */
+      const defaultKbBinds = [
+        { label: "Action / Jump", targetKey: "Space", mappedCode: "Space", mappedKey: " " },
+        { label: "Attack / Primary", targetKey: "X", mappedCode: "KeyX", mappedKey: "x" },
+        { label: "Special / Secondary", targetKey: "Z", mappedCode: "KeyZ", mappedKey: "z" },
+        { label: "Up", targetKey: "ArrowUp", mappedCode: "ArrowUp", mappedKey: "ArrowUp" },
+        { label: "Down", targetKey: "ArrowDown", mappedCode: "ArrowDown", mappedKey: "ArrowDown" },
+        { label: "Left", targetKey: "ArrowLeft", mappedCode: "ArrowLeft", mappedKey: "ArrowLeft" },
+        { label: "Right", targetKey: "ArrowRight", mappedCode: "ArrowRight", mappedKey: "ArrowRight" }
+      ];
+
+      let kbBinds = JSON.parse(localStorage.getItem("flash_kb_binds")) || JSON.parse(JSON.stringify(defaultKbBinds));
+      let kbListeningIndex = -1;
+
+      function renderKbMapperUI() {
+        kbList.innerHTML = "";
+        kbBinds.forEach((bind, idx) => {
+          const row = document.createElement("div");
+          row.className = "mapper-row";
+          row.innerHTML = `
+            <span style="font-size: 0.8rem;">${bind.label}</span>
+            <button class="bind-btn ${kbListeningIndex === idx ? 'listening' : ''}" data-kb-idx="${idx}">
+              ${kbListeningIndex === idx ? 'Press Key...' : (bind.mappedKey === ' ' ? 'Space' : bind.mappedKey.toUpperCase())}
+            </button>
+          `;
+          kbList.appendChild(row);
+        });
+
+        document.querySelectorAll("[data-kb-idx]").forEach(btn => {
+          btn.addEventListener("click", (e) => {
+            kbListeningIndex = parseInt(e.target.getAttribute("data-kb-idx"));
+            renderKbMapperUI();
+          });
+        });
+      }
+
+      resetKbBtn.addEventListener("click", () => {
+        kbBinds = JSON.parse(JSON.stringify(defaultKbBinds));
+        localStorage.removeItem("flash_kb_binds");
+        kbListeningIndex = -1;
+        renderKbMapperUI();
+      });
+
+      kbBtn.addEventListener("click", () => {
+        renderKbMapperUI();
+        kbModal.classList.add("open");
+      });
+
+      closeKbModal.addEventListener("click", () => {
+        kbModal.classList.remove("open");
+        kbListeningIndex = -1;
+      });
+
+      kbBtn.addEventListener("click", () => {
+        renderKbMapperUI();
+        kbModal.classList.add("open");
+      });
+
+      closeModal.addEventListener("click", () => {
+        mapperModal.classList.remove("open");
+      });
     });
   </script>
+
 </body>
 </html>
