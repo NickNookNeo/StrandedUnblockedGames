@@ -165,7 +165,6 @@
       outline: none;
     }
 
-    /* Fixed-Width Volume Control Container */
     .volume-container {
       display: flex;
       align-items: center;
@@ -176,7 +175,6 @@
       border: 1px solid var(--border-color);
     }
 
-    /* Fixed size for the mute button so icon swaps don't stretch the layout */
     .mute-btn {
       width: 28px;
       height: 28px;
@@ -388,7 +386,7 @@
         if (val == 0) {
           muteBtn.textContent = "🔇";
         } else if (val < 0.5) {
-          muteBtn.textContent = "🔉";
+          muteBtn.textContent = "m🔉";
         } else {
           muteBtn.textContent = "🔊";
         }
@@ -477,14 +475,6 @@
       fsBtn.addEventListener("click", () => {
         fsBtn.blur();
         toggleFullscreen();
-      });
-
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "f" || e.key === "F") {
-          if (document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
-            toggleFullscreen();
-          }
-        }
       });
     });
   </script>
