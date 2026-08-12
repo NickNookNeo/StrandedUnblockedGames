@@ -82,6 +82,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      overflow: hidden;
     }
 
     #flash-container {
@@ -97,6 +98,7 @@
       background-color: var(--card-bg);
       padding: 10px 16px;
       border-top: 1px solid var(--border-color);
+      width: 100%;
     }
 
     .control-group {
@@ -126,16 +128,19 @@
     }
 
     .player-wrapper:fullscreen {
-      width: 100vw;
-      height: 100vh;
-      max-width: none;
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: none !important;
       border-radius: 0;
       border: none;
+      justify-content: space-between;
     }
 
     .player-wrapper:fullscreen .player-container {
-      height: calc(100vh - 53px);
-      width: 100%;
+      flex: 1;
+      height: calc(100vh - 53px) !important;
+      width: 100% !important;
+      aspect-ratio: auto !important;
     }
   </style>
 
@@ -145,7 +150,7 @@
     window.RufflePlayer.config = {
       "clip": true,
       "scale": "showAll",
-      "letterbox": "off"
+      "letterbox": "on"
     };
   </script>
 </head>
