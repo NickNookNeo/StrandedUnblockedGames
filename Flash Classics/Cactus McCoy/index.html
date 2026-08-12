@@ -25,6 +25,7 @@
       padding: 0;
       overflow: hidden;
       background: var(--bg-gradient) !important;
+      background-attachment: fixed !important;
       color: var(--text-color);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       user-select: none;
@@ -112,7 +113,7 @@
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
     }
 
-    /* Force Ruffle Player to fill exact box and stay centered */
+    /* Force Ruffle Elements Transparent to reveal global background */
     ruffle-embed, ruffle-object, ruffle-player, #flash-container {
       width: 100% !important;
       height: 100% !important;
@@ -120,6 +121,18 @@
       align-items: center !important;
       justify-content: center !important;
       background: transparent !important;
+    }
+
+    /* Fullscreen Background Override */
+    .player-wrapper:fullscreen,
+    .player-wrapper:-webkit-full-screen {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      border-radius: 0 !important;
+      border: none !important;
+      background: var(--bg-gradient) !important;
     }
 
     /* Auto-Hiding Control Bar */
@@ -193,12 +206,14 @@
       border: 1px solid var(--border-color);
       border-radius: 12px;
       width: 90%;
-      max-width: 500px;
+      max-width: 520px;
       padding: 1.25rem;
       display: flex;
       flex-direction: column;
       gap: 0.85rem;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.9);
+      max-height: 85vh;
+      overflow-y: auto;
     }
 
     .modal-header {
@@ -241,14 +256,23 @@
       font-family: monospace;
       font-size: 0.8rem;
       cursor: pointer;
+      min-width: 100px;
+      text-align: center;
     }
 
     .bind-key.listening {
       background: var(--accent-color);
       color: #000;
+      animation: pulse 1s infinite;
     }
 
-    /* Theater / Fullscreen */
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+
+    /* Theater / Fullscreen Mode */
     body.theater-mode .header-container { display: none !important; }
     body.theater-mode .player-wrapper {
       max-width: 100vw !important;
@@ -261,12 +285,11 @@
 
   <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
   <script>
-    // Config tuned to force scale-to-fit without pushing SWF past container bounds
     window.RufflePlayer = window.RufflePlayer || {};
     window.RufflePlayer.config = {
       "scale": "showAll",
       "forceScale": false,
-      "letterbox": "on"
+      "letterbox": "off"
     };
   </script>
 </head>
@@ -303,7 +326,7 @@
     </div>
   </div>
 
-  <!-- Keyboard Modal -->
+  <!-- Keyboard Remapping Modal -->
   <div class="modal-overlay" id="kb-modal">
     <div class="modal-card">
       <div class="modal-header">
@@ -312,38 +335,66 @@
       </div>
       <div class="bind-row">
         <span>Move Left</span>
-        <button class="bind-key" data-action="left">ArrowLeft</button>
+        <button class="bind-key kb-bind" data-action="left">ArrowLeft</button>
       </div>
       <div class="bind-row">
         <span>Move Right</span>
-        <button class="bind-key" data-action="right">ArrowRight</button>
+        <button class="bind-key kb-bind" data-action="right">ArrowRight</button>
       </div>
       <div class="bind-row">
-        <span>Jump</span>
-        <button class="bind-key" data-action="jump">A</button>
+        <span>Move Up</span>
+        <button class="bind-key kb-bind" data-action="up">ArrowUp</button>
       </div>
       <div class="bind-row">
-        <span>Attack</span>
-        <button class="bind-key" data-action="attack">S</button>
+        <span>Move Down</span>
+        <button class="bind-key kb-bind" data-action="down">ArrowDown</button>
+      </div>
+      <div class="bind-row">
+        <span>Jump / Action 1</span>
+        <button class="bind-key kb-bind" data-action="jump">a</button>
+      </div>
+      <div class="bind-row">
+        <span>Attack / Action 2</span>
+        <button class="bind-key kb-bind" data-action="attack">s</button>
+      </div>
+      <div class="bind-row">
+        <span>Special / Action 3</span>
+        <button class="bind-key kb-bind" data-action="special">d</button>
       </div>
     </div>
   </div>
 
-  <!-- Controller Modal -->
+  <!-- Controller Remapping Modal -->
   <div class="modal-overlay" id="mapper-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>Controller (XInput)</h3>
+        <h3>Controller Remapping</h3>
         <button class="close-modal-btn" id="close-mapper">&times;</button>
       </div>
       <p style="font-size: 0.8rem; color: #38bdf8; margin: 0;" id="pad-status">Searching for controller...</p>
       <div class="bind-row">
-        <span>Button A (Jump)</span>
-        <button class="bind-key" data-pad="0">Map Key</button>
+        <span>Button A (Bottom)</span>
+        <button class="bind-key pad-bind" data-pad-btn="0">a</button>
       </div>
       <div class="bind-row">
-        <span>Button X (Attack)</span>
-        <button class="bind-key" data-pad="2">Map Key</button>
+        <span>Button B (Right)</span>
+        <button class="bind-key pad-bind" data-pad-btn="1">s</button>
+      </div>
+      <div class="bind-row">
+        <span>Button X (Left)</span>
+        <button class="bind-key pad-bind" data-pad-btn="2">a</button>
+      </div>
+      <div class="bind-row">
+        <span>Button Y (Top)</span>
+        <button class="bind-key pad-bind" data-pad-btn="3">d</button>
+      </div>
+      <div class="bind-row">
+        <span>Left Bumper (LB)</span>
+        <button class="bind-key pad-bind" data-pad-btn="4">q</button>
+      </div>
+      <div class="bind-row">
+        <span>Right Bumper (RB)</span>
+        <button class="bind-key pad-bind" data-pad-btn="5">e</button>
       </div>
     </div>
   </div>
@@ -357,16 +408,37 @@
       const padStatus = document.getElementById("pad-status");
 
       let activeListeningBtn = null;
+      let listeningType = null; // 'kb' or 'pad'
       let isPaused = false;
 
-      // Controller-to-Keyboard synthetic event bridge map
-      const controllerBinds = {
-        0: { key: "a", code: "KeyA", keyCode: 65 }, // Button A -> 'A'
-        2: { key: "s", code: "KeyS", keyCode: 83 }  // Button X -> 'S'
+      // Active Key Map Definitions
+      const kbMap = {
+        left:    { key: "ArrowLeft",  code: "ArrowLeft",  keyCode: 37 },
+        right:   { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
+        up:      { key: "ArrowUp",    code: "ArrowUp",    keyCode: 38 },
+        down:    { key: "ArrowDown",  code: "ArrowDown",  keyCode: 40 },
+        jump:    { key: "a",          code: "KeyA",       keyCode: 65 },
+        attack:  { key: "s",          code: "KeyS",       keyCode: 83 },
+        special: { key: "d",          code: "KeyD",       keyCode: 68 }
       };
+
+      const controllerBinds = {
+        0: { key: "a", code: "KeyA", keyCode: 65 }, // Button A
+        1: { key: "s", code: "KeyS", keyCode: 83 }, // Button B
+        2: { key: "a", code: "KeyA", keyCode: 65 }, // Button X
+        3: { key: "d", code: "KeyD", keyCode: 68 }, // Button Y
+        4: { key: "q", code: "KeyQ", keyCode: 81 }, // LB
+        5: { key: "e", code: "KeyE", keyCode: 69 }  // RB
+      };
+
       const activePadState = {};
 
-      // Control bar hover trigger
+      // Get target Ruffle Element reliably
+      function getPlayer() {
+        return document.querySelector("ruffle-embed, ruffle-object, ruffle-player, #flash-container");
+      }
+
+      // Auto-Hiding Control Bar logic
       let hideTimer;
       wrapper.addEventListener("mousemove", (e) => {
         const rect = wrapper.getBoundingClientRect();
@@ -380,56 +452,82 @@
       });
       wrapper.addEventListener("mouseleave", () => controlBar.classList.remove("visible"));
 
-      // Fullscreen & Theater
+      // Fullscreen & Theater Controls
       document.getElementById("fs-btn").addEventListener("click", () => {
         if (!document.fullscreenElement) wrapper.requestFullscreen();
         else document.exitFullscreen();
       });
+
       document.getElementById("theater-btn").addEventListener("click", () => {
         document.body.classList.toggle("theater-mode");
       });
 
-      // Pause/Restart
+      // Pause/Restart Buttons
       document.getElementById("play-pause-btn").addEventListener("click", (e) => {
-        const player = document.querySelector("ruffle-embed, ruffle-object, ruffle-player, #flash-container");
+        const player = getPlayer();
         if (!player) return;
-        if (isPaused) { player.play && player.play(); e.target.textContent = "Pause"; }
-        else { player.pause && player.pause(); e.target.textContent = "Play"; }
+        if (isPaused) { 
+          if (typeof player.play === "function") player.play(); 
+          e.target.textContent = "Pause"; 
+        } else { 
+          if (typeof player.pause === "function") player.pause(); 
+          e.target.textContent = "Play"; 
+        }
         isPaused = !isPaused;
       });
+
       document.getElementById("reload-btn").addEventListener("click", () => {
-        const player = document.querySelector("ruffle-embed, ruffle-object, ruffle-player, #flash-container");
-        if (player && player.reload) player.reload();
+        const player = getPlayer();
+        if (player && typeof player.reload === "function") {
+          player.reload();
+        } else if (player) {
+          const currentData = player.getAttribute("data");
+          player.setAttribute("data", "");
+          setTimeout(() => player.setAttribute("data", currentData), 10);
+        }
       });
 
-      // Modal Controls
+      // Modal Toggles
       document.getElementById("kb-btn").onclick = () => kbModal.classList.add("open");
       document.getElementById("close-kb").onclick = () => kbModal.classList.remove("open");
       document.getElementById("mapper-btn").onclick = () => mapperModal.classList.add("open");
       document.getElementById("close-mapper").onclick = () => mapperModal.classList.remove("open");
 
-      // Remapping button listener logic
+      // Set key listening mode
       document.querySelectorAll(".bind-key").forEach(btn => {
         btn.addEventListener("click", (e) => {
           if (activeListeningBtn) activeListeningBtn.classList.remove("listening");
           activeListeningBtn = e.target;
+          listeningType = btn.classList.contains("kb-bind") ? "kb" : "pad";
           activeListeningBtn.classList.add("listening");
           activeListeningBtn.textContent = "Press Key...";
         });
       });
 
+      // Capture Keyboard inputs for remapping
       window.addEventListener("keydown", (e) => {
-        if (activeListeningBtn) {
-          e.preventDefault();
-          activeListeningBtn.textContent = e.key === " " ? "Space" : e.key;
-          activeListeningBtn.classList.remove("listening");
-          activeListeningBtn = null;
+        if (!activeListeningBtn) return;
+
+        e.preventDefault();
+        const label = e.key === " " ? "Space" : e.key;
+
+        if (listeningType === "kb") {
+          const action = activeListeningBtn.getAttribute("data-action");
+          kbMap[action] = { key: e.key, code: e.code, keyCode: e.keyCode };
+          activeListeningBtn.textContent = label;
+        } else if (listeningType === "pad") {
+          const padIdx = activeListeningBtn.getAttribute("data-pad-btn");
+          controllerBinds[padIdx] = { key: e.key, code: e.code, keyCode: e.keyCode };
+          activeListeningBtn.textContent = label;
         }
+
+        activeListeningBtn.classList.remove("listening");
+        activeListeningBtn = null;
       });
 
-      // Gamepad polling engine (Synthesizes keys directly to Ruffle element)
+      // Dispatch Synthetic Keyboard Event directly to Ruffle
       function sendSyntheticKey(type, keyInfo) {
-        const target = document.querySelector("ruffle-embed, ruffle-object, ruffle-player, #flash-container");
+        const target = getPlayer();
         if (!target) return;
         target.dispatchEvent(new KeyboardEvent(type, {
           key: keyInfo.key,
@@ -440,35 +538,40 @@
         }));
       }
 
+      // Main Gamepad Polling Loop
       function gameLoop() {
         const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-        const gp = gamepads[0] || gamepads[1];
+        const gp = gamepads[0] || gamepads[1] || gamepads[2] || gamepads[3];
 
         if (gp) {
-          padStatus.textContent = `Connected: ${gp.id.substring(0, 30)}...`;
+          padStatus.textContent = `Connected: ${gp.id.substring(0, 32)}...`;
 
-          // Check Left Stick / D-Pad
+          // Check Axis & D-Pad inputs
           const axisX = gp.axes[0];
-          const dLeft = (gp.buttons[14] && gp.buttons[14].pressed) || axisX < -0.5;
+          const axisY = gp.axes[1];
+
+          const dLeft  = (gp.buttons[14] && gp.buttons[14].pressed) || axisX < -0.5;
           const dRight = (gp.buttons[15] && gp.buttons[15].pressed) || axisX > 0.5;
+          const dUp    = (gp.buttons[12] && gp.buttons[12].pressed) || axisY < -0.5;
+          const dDown  = (gp.buttons[13] && gp.buttons[13].pressed) || axisY > 0.5;
 
-          if (dLeft && !activePadState['left']) {
-            sendSyntheticKey('keydown', { key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37 });
-            activePadState['left'] = true;
-          } else if (!dLeft && activePadState['left']) {
-            sendSyntheticKey('keyup', { key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37 });
-            activePadState['left'] = false;
-          }
+          // Helper to process directional state toggles
+          const checkDirection = (stateKey, isPressed, bindTarget) => {
+            if (isPressed && !activePadState[stateKey]) {
+              sendSyntheticKey('keydown', bindTarget);
+              activePadState[stateKey] = true;
+            } else if (!isPressed && activePadState[stateKey]) {
+              sendSyntheticKey('keyup', bindTarget);
+              activePadState[stateKey] = false;
+            }
+          };
 
-          if (dRight && !activePadState['right']) {
-            sendSyntheticKey('keydown', { key: 'ArrowRight', code: 'ArrowRight', keyCode: 39 });
-            activePadState['right'] = true;
-          } else if (!dRight && activePadState['right']) {
-            sendSyntheticKey('keyup', { key: 'ArrowRight', code: 'ArrowRight', keyCode: 39 });
-            activePadState['right'] = false;
-          }
+          checkDirection('left',  dLeft,  kbMap.left);
+          checkDirection('right', dRight, kbMap.right);
+          checkDirection('up',    dUp,    kbMap.up);
+          checkDirection('down',  dDown,  kbMap.down);
 
-          // Check mapped buttons
+          // Dynamic Controller Button check loop
           Object.keys(controllerBinds).forEach(bIdx => {
             const pressed = gp.buttons[bIdx] && gp.buttons[bIdx].pressed;
             if (pressed && !activePadState[bIdx]) {
@@ -479,11 +582,14 @@
               activePadState[bIdx] = false;
             }
           });
+
         } else {
-          padStatus.textContent = "No active gamepad detected. Press any controller button.";
+          padStatus.textContent = "No controller detected. Press any button on your gamepad.";
         }
+
         requestAnimationFrame(gameLoop);
       }
+
       requestAnimationFrame(gameLoop);
     });
   </script>
