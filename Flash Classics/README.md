@@ -1,4 +1,4 @@
 # [Mario Combat](<./Mario Combat/>)
 <img src="./assets/MarioCombat.jpg"/>
- <a href="./Cactus McCoy"><h1>Cactus McCoy</h1></a>
+  <h1><a href=“./Cactus McCoy”>Cactus McCoy</a></h1>
 <img src=./assets/CactusMccoy1-Gameplay1.png/>
