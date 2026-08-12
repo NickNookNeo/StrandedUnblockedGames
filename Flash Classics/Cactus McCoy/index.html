@@ -99,7 +99,7 @@
       width: 100%;
     }
 
-    /* Main Container (Transparent to show ambient background) */
+    /* Main Container */
     .player-wrapper {
       position: relative;
       width: 100%;
@@ -115,7 +115,7 @@
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
     }
 
-    /* Keep Black Stage Letterboxing inside Ruffle Embed */
+    /* Inner canvas frame retains solid black letterboxing */
     #flash-container, ruffle-embed, ruffle-object, ruffle-player {
       width: 100% !important;
       height: 100% !important;
@@ -212,16 +212,16 @@
       cursor: pointer;
     }
 
-    /* Modals */
+    /* Modals - Functional Overlay System */
     .modal-overlay {
-      position: absolute;
+      position: fixed;
       inset: 0;
       background: rgba(5, 8, 17, 0.85);
       backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 100;
+      z-index: 999;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.2s ease;
@@ -242,6 +242,7 @@
       display: flex;
       flex-direction: column;
       gap: 0.85rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.9);
     }
 
     .modal-header {
@@ -261,11 +262,12 @@
       background: transparent;
       border: none;
       color: var(--text-color);
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       cursor: pointer;
+      line-height: 1;
     }
 
-    /* Fullscreen & Theater Overrides with Ambient Gradient */
+    /* Fullscreen & Theater Overrides */
     .player-wrapper:fullscreen,
     .player-wrapper:-webkit-full-screen {
       width: 100vw !important;
@@ -276,7 +278,7 @@
       background: var(--ambient-gradient) !important;
     }
 
-    .player-wrapper::backdrop {
+    ::backdrop {
       background: var(--ambient-gradient) !important;
     }
 
@@ -351,16 +353,27 @@
         <button class="control-btn" id="fs-btn">Fullscreen</button>
       </div>
     </div>
+  </div>
 
-    <!-- Modals -->
-    <div class="modal-overlay" id="kb-modal">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3>Keyboard Rebinding</h3>
-          <button class="close-modal-btn" id="close-kb-modal">&times;</button>
-        </div>
-        <p style="font-size: 0.85rem; color: #94a3b8;">Default Flash controls active.</p>
+  <!-- Keyboard Binds Modal -->
+  <div class="modal-overlay" id="kb-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Keyboard Rebinding</h3>
+        <button class="close-modal-btn" id="close-kb-modal">&times;</button>
       </div>
+      <p style="font-size: 0.85rem; color: #94a3b8; margin: 0;">Default Flash controls active. Click outside or press close to exit.</p>
+    </div>
+  </div>
+
+  <!-- Controller Binds Modal -->
+  <div class="modal-overlay" id="mapper-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Controller Rebinding</h3>
+        <button class="close-modal-btn" id="close-mapper-modal">&times;</button>
+      </div>
+      <p style="font-size: 0.85rem; color: #94a3b8; margin: 0;">Press any button on a connected controller to begin mapping.</p>
     </div>
   </div>
 
@@ -372,9 +385,14 @@
       const theaterBtn = document.getElementById("theater-btn");
       const playPauseBtn = document.getElementById("play-pause-btn");
       const reloadBtn = document.getElementById("reload-btn");
+
+      /* Modal Elements */
       const kbBtn = document.getElementById("kb-btn");
+      const mapperBtn = document.getElementById("mapper-btn");
       const kbModal = document.getElementById("kb-modal");
+      const mapperModal = document.getElementById("mapper-modal");
       const closeKbModal = document.getElementById("close-kb-modal");
+      const closeMapperModal = document.getElementById("close-mapper-modal");
 
       let isPaused = false;
 
@@ -433,8 +451,19 @@
         if (player && player.reload) player.reload();
       });
 
+      /* Functional Modal Handlers */
       kbBtn.addEventListener("click", () => kbModal.classList.add("open"));
       closeKbModal.addEventListener("click", () => kbModal.classList.remove("open"));
+
+      mapperBtn.addEventListener("click", () => mapperModal.classList.add("open"));
+      closeMapperModal.addEventListener("click", () => mapperModal.classList.remove("open"));
+
+      /* Close modals when clicking backdrop */
+      [kbModal, mapperModal].forEach(modal => {
+        modal.addEventListener("click", (e) => {
+          if (e.target === modal) modal.classList.remove("open");
+        });
+      });
     });
   </script>
 
