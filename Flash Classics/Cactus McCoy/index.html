@@ -32,7 +32,7 @@
 
     .header-container {
       width: 100%;
-      max-width: 1000px;
+      max-width: 800px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -68,23 +68,26 @@
       display: flex;
       flex-direction: column;
       width: 100%;
-      max-width: 1000px;
+      max-width: 800px;
       background-color: #000;
       border-radius: 12px;
       overflow: hidden;
       border: 1px solid var(--border-color);
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      transition: aspect-ratio 0.3s ease;
     }
 
     .player-container {
       width: 100%;
-      aspect-ratio: 16 / 9;
+      aspect-ratio: 4 / 3; 
       background-color: #000;
+      transition: aspect-ratio 0.3s ease;
     }
 
     #flash-container {
       width: 100%;
       height: 100%;
+      display: block;
     }
 
     .control-bar {
@@ -132,7 +135,7 @@
 
     .player-wrapper:fullscreen .player-container {
       height: calc(100vh - 53px);
-      aspect-ratio: auto;
+      aspect-ratio: auto !important;
     }
   </style>
 
@@ -142,7 +145,7 @@
     window.RufflePlayer.config = {
       "clip": true,
       "scale": "showAll",
-      "letterbox": "on"
+      "letterbox": "off"
     };
   </script>
 </head>
@@ -155,7 +158,7 @@
   </div>
 
   <div class="player-wrapper" id="player-wrapper">
-    <div class="player-container">
+    <div class="player-container" id="player-container">
       <object id="flash-container" type="application/x-shockwave-flash" data="cactusmccoy.swf">
         <p>Unable to load Flash content.</p>
       </object>
@@ -173,47 +176,79 @@
   </div>
 
   <script>
-    window.RufflePlayer = window.RufflePlayer || {};
     window.addEventListener("DOMContentLoaded", () => {
       const wrapper = document.getElementById("player-wrapper");
+      const playerContainer = document.getElementById("player-container");
       const fsBtn = document.getElementById("fs-btn");
       const playPauseBtn = document.getElementById("play-pause-btn");
       const reloadBtn = document.getElementById("reload-btn");
 
       function getRufflePlayer() {
-        const container = document.getElementById("flash-container");
-        if (container && typeof container.pause === "function") {
-          return container;
-        }
-        const ruffleElement = document.querySelector("ruffle-embed, ruffle-object");
-        if (ruffleElement && typeof ruffleElement.pause === "function") {
-          return ruffleElement;
-        }
+        const obj = document.getElementById("flash-container");
+        if (obj && (typeof obj.pause === "function" || obj.metadata)) return obj;
+
+        const ruffleTag = document.querySelector("ruffle-embed, ruffle-object, ruffle-player");
+        if (ruffleTag) return ruffleTag;
+
         return null;
       }
 
-      function syncState() {
+      const checkMetadata = setInterval(() => {
         const player = getRufflePlayer();
         if (!player) return;
 
-        let currentlyPlaying = true;
+        const meta = player.metadata || (player.ruffle && player.ruffle().metadata);
+        if (meta && meta.width && meta.height) {
+          playerContainer.style.aspectRatio = `${meta.width} / ${meta.height}`;
+          clearInterval(checkMetadata);
+        }
+      }, 100);
+
+      function isPlayerPaused(player) {
+        if (!player) return false;
         if (typeof player.isPlaying === "function") {
-          currentlyPlaying = player.isPlaying();
-        } else if (player.shadowRoot) {
+          return !player.isPlaying();
+        }
+        if (player.shadowRoot) {
           const overlay = player.shadowRoot.querySelector("#play-overlay");
-          if (overlay && overlay.style.display !== "none") {
-            currentlyPlaying = false;
+          if (overlay && overlay.style.display !== "none" && overlay.style.display !== "") {
+            return true;
           }
         }
-
-        if (currentlyPlaying) {
-          playPauseBtn.textContent = "Pause";
-        } else {
-          playPauseBtn.textContent = "Play";
-        }
+        return false;
       }
 
-      setInterval(syncState, 100);
+      playPauseBtn.addEventListener("click", () => {
+        const player = getRufflePlayer();
+        if (!player) return;
+
+        const paused = isPlayerPaused(player);
+
+        if (paused) {
+          if (typeof player.play === "function") player.play();
+          playPauseBtn.textContent = "Pause";
+        } else {
+          if (typeof player.pause === "function") player.pause();
+          playPauseBtn.textContent = "Play";
+        }
+      });
+
+      reloadBtn.addEventListener("click", () => {
+        const player = getRufflePlayer();
+        if (!player) return;
+
+        if (typeof player.reload === "function") {
+          player.reload();
+        } else {
+          const container = document.getElementById("flash-container");
+          if (container) {
+            const currentData = container.getAttribute("data");
+            container.setAttribute("data", "");
+            setTimeout(() => container.setAttribute("data", currentData), 10);
+          }
+        }
+        playPauseBtn.textContent = "Pause";
+      });
 
       fsBtn.addEventListener("click", () => {
         if (!document.fullscreenElement) {
@@ -229,46 +264,6 @@
             document.exitFullscreen();
           }
         }
-      });
-
-      playPauseBtn.addEventListener("click", () => {
-        const player = getRufflePlayer();
-        if (!player) return;
-
-        let currentlyPlaying = true;
-        if (typeof player.isPlaying === "function") {
-          currentlyPlaying = player.isPlaying();
-        } else if (player.shadowRoot) {
-          const overlay = player.shadowRoot.querySelector("#play-overlay");
-          if (overlay && overlay.style.display !== "none") {
-            currentlyPlaying = false;
-          }
-        }
-
-        if (currentlyPlaying) {
-          player.pause();
-          playPauseBtn.textContent = "Play";
-        } else {
-          player.play();
-          playPauseBtn.textContent = "Pause";
-        }
-      });
-
-      reloadBtn.addEventListener("click", () => {
-        const player = getRufflePlayer();
-        if (!player) return;
-
-        if (typeof player.reload === "function") {
-          player.reload();
-        } else {
-          const container = document.getElementById("flash-container");
-          if (container) {
-            const currentData = container.getAttribute("data");
-            container.setAttribute("data", "");
-            container.setAttribute("data", currentData);
-          }
-        }
-        playPauseBtn.textContent = "Pause";
       });
     });
   </script>
