@@ -15,6 +15,7 @@
       --card-hover: #334155;
       --text-color: #f8fafc;
       --accent-color: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.35);
       --danger-color: #ef4444;
       --border-color: rgba(255, 255, 255, 0.1);
     }
@@ -29,6 +30,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       min-height: 100vh;
       user-select: none;
       -webkit-user-select: none;
@@ -37,9 +39,9 @@
     .header-container {
       width: 100%;
       max-width: 800px;
-      display: flex;
+      display: grid;
+      grid-template-columns: 120px 1fr 120px;
       align-items: center;
-      justify-content: space-between;
       margin-bottom: 1.5rem;
       transition: max-width 0.3s ease;
     }
@@ -55,6 +57,7 @@
       font-weight: 600;
       border: 1px solid var(--border-color);
       transition: background-color 0.2s, color 0.2s;
+      justify-self: start;
     }
 
     .back-btn:hover {
@@ -62,12 +65,17 @@
       color: var(--accent-color);
     }
 
-    h1 {
-      font-size: 2rem;
+    h1.game-title {
+      font-size: 2.25rem;
+      font-weight: 800;
       margin: 0;
       text-transform: uppercase;
-      letter-spacing: 2px;
-      color: var(--accent-color);
+      letter-spacing: 3px;
+      text-align: center;
+      background: linear-gradient(135deg, #ffffff 0%, var(--accent-color) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 4px 20px var(--accent-glow);
     }
 
     .player-wrapper {
@@ -78,11 +86,12 @@
       justify-content: center;
       width: 100%;
       max-width: 800px;
+      margin: 0 auto;
       background: radial-gradient(circle at center, #1e293b 0%, #050811 100%);
       border-radius: 12px;
       overflow: hidden;
       border: 1px solid var(--border-color);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(56, 189, 248, 0.05);
       transition: max-width 0.3s ease;
     }
 
@@ -107,7 +116,6 @@
       background: transparent !important;
     }
 
-    /* FPS Counter Overlay */
     .fps-counter {
       position: absolute;
       top: 10px;
@@ -240,7 +248,6 @@
       transform: scale(1.2);
     }
 
-    /* Modal / Mapper Overlay */
     .modal-overlay {
       position: absolute;
       inset: 0;
@@ -409,8 +416,8 @@
 
   <div class="header-container" id="header">
     <a href="../index.html" class="back-btn">&larr; Games List</a>
-    <h1>Cactus McCoy</h1>
-    <div style="width: 100px;"></div> 
+    <h1 class="game-title">Cactus McCoy</h1>
+    <div></div>
   </div>
 
   <div class="player-wrapper" id="player-wrapper" tabindex="0">
@@ -439,7 +446,6 @@
       </div>
     </div>
 
-    <!-- Gamepad Mapping Modal (Placed inside player-wrapper for Fullscreen compatibility) -->
     <div class="modal-overlay" id="mapper-modal">
       <div class="modal-card">
         <div class="modal-header">
@@ -447,9 +453,7 @@
           <button class="close-modal-btn" id="close-modal">&times;</button>
         </div>
         <div id="gamepad-status" style="font-size: 0.85rem; color: #94a3b8;">No Gamepad Detected. Press any button on controller.</div>
-        <div class="mapper-list" id="mapper-list">
-          <!-- Rows dynamically injected -->
-        </div>
+        <div class="mapper-list" id="mapper-list"></div>
         <div class="modal-footer">
           <button class="reset-btn" id="reset-binds-btn">Reset Binds</button>
         </div>
@@ -481,7 +485,6 @@
       let isRatioApplied = false;
       let previousVolume = 1;
 
-      /* --- REAL GAME FPS COUNTER LOGIC --- */
       let fpsActive = false;
       let realGameFrames = 0;
       let fpsIntervalId = null;
@@ -533,7 +536,6 @@
         }
       });
 
-      /* --- GAMEPAD MAPPER LOGIC --- */
       const defaultBinds = [
         { label: "Button A (Jump/Action)", padIndex: 0, key: "Space", code: "Space" },
         { label: "Button B (Attack/Cancel)", padIndex: 1, key: "x", code: "KeyX" },
@@ -668,7 +670,6 @@
       }
       requestAnimationFrame(pollGamepad);
 
-      /* --- HELPER & RUFFLE PLAYER FUNCTIONS --- */
       function getRufflePlayer() {
         const obj = document.getElementById("flash-container");
         if (obj && (typeof obj.pause === "function" || obj.metadata || obj.shadowRoot)) return obj;
@@ -733,7 +734,7 @@
         if (val == 0) {
           muteBtn.textContent = "🔇";
         } else if (val < 0.5) {
-          muteBtn.textContent = "m";
+          muteBtn.textContent = "🔉";
         } else {
           muteBtn.textContent = "🔊";
         }
