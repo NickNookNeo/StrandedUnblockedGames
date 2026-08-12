@@ -34,8 +34,10 @@
       min-height: 100vh;
       user-select: none;
       -webkit-user-select: none;
+      transition: padding 0.3s ease;
     }
 
+    /* Header Container */
     .header-container {
       width: 100%;
       max-width: 800px;
@@ -43,6 +45,7 @@
       grid-template-columns: 140px 1fr 140px;
       align-items: center;
       margin-bottom: 1.5rem;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
     .back-btn {
@@ -79,6 +82,7 @@
       text-shadow: 0 4px 20px var(--accent-glow);
     }
 
+    /* Player Container */
     .player-wrapper {
       position: relative;
       display: flex;
@@ -94,6 +98,7 @@
       overflow: hidden;
       border: 1px solid var(--border-color);
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(56, 189, 248, 0.05);
+      transition: max-width 0.3s ease, width 0.3s ease;
     }
 
     .player-container {
@@ -117,6 +122,7 @@
       background: transparent !important;
     }
 
+    /* FPS Counter */
     .fps-counter {
       position: absolute;
       top: 10px;
@@ -138,6 +144,7 @@
       display: block;
     }
 
+    /* Controls Bar */
     .control-bar {
       position: absolute;
       bottom: 0;
@@ -165,11 +172,11 @@
     .control-group {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .control-btn {
-      padding: 8px 16px;
+      padding: 8px 12px;
       background-color: rgba(255, 255, 255, 0.05);
       color: var(--text-color);
       border: 1px solid var(--border-color);
@@ -225,7 +232,7 @@
     .volume-slider {
       -webkit-appearance: none;
       appearance: none;
-      width: 75px;
+      width: 65px;
       height: 4px;
       border-radius: 2px;
       background: rgba(255, 255, 255, 0.2);
@@ -249,6 +256,7 @@
       transform: scale(1.2);
     }
 
+    /* Modal Styling */
     .modal-overlay {
       position: absolute;
       inset: 0;
@@ -371,6 +379,24 @@
       font-weight: bold;
     }
 
+    /* Theater Mode */
+    body.theater-mode {
+      padding: 0;
+    }
+
+    body.theater-mode .header-container {
+      display: none;
+    }
+
+    body.theater-mode .player-wrapper {
+      max-width: 100vw;
+      width: 100vw;
+      height: 100vh;
+      border-radius: 0;
+      border: none;
+    }
+
+    /* Fullscreen Mode */
     .player-wrapper:fullscreen {
       width: 100vw !important;
       height: 100vh !important;
@@ -441,12 +467,17 @@
       </div>
       
       <div class="control-group">
-        <button class="control-btn" id="fps-btn">FPS</button>
+        <button class="control-btn" id="scale-btn">Scale: Fit</button>
+        <button class="control-btn" id="kb-btn">Keyboard</button>
         <button class="control-btn" id="mapper-btn">Controller</button>
+
+        <button class="control-btn" id="fps-btn">FPS</button>
+        <button class="control-btn" id="theater-btn">Theater</button>
         <button class="control-btn" id="fs-btn">Fullscreen</button>
       </div>
     </div>
 
+    <!-- Controller Mapper Modal -->
     <div class="modal-overlay" id="mapper-modal">
       <div class="modal-card">
         <div class="modal-header">
@@ -460,6 +491,22 @@
         </div>
       </div>
     </div>
+
+    <!-- Keyboard Rebind Modal -->
+    <div class="modal-overlay" id="kb-modal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Keyboard Rebinding</h3>
+          <button class="close-modal-btn" id="close-kb-modal">&times;</button>
+        </div>
+        <div style="font-size: 0.85rem; color: #94a3b8;">Remap standard inputs to custom keys.</div>
+        <div class="mapper-list" id="kb-list"></div>
+        <div class="modal-footer">
+          <button class="reset-btn" id="reset-kb-btn">Reset Defaults</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -468,17 +515,27 @@
       const playerContainer = document.getElementById("player-container");
       const controlBar = document.getElementById("control-bar");
       const fsBtn = document.getElementById("fs-btn");
+      const theaterBtn = document.getElementById("theater-btn");
       const playPauseBtn = document.getElementById("play-pause-btn");
       const reloadBtn = document.getElementById("reload-btn");
       const fpsBtn = document.getElementById("fps-btn");
       const fpsCounter = document.getElementById("fps-counter");
+      const scaleBtn = document.getElementById("scale-btn");
+
+      // Modals & Buttons
       const mapperBtn = document.getElementById("mapper-btn");
       const mapperModal = document.getElementById("mapper-modal");
       const closeModal = document.getElementById("close-modal");
       const gamepadStatus = document.getElementById("gamepad-status");
       const mapperList = document.getElementById("mapper-list");
       const resetBindsBtn = document.getElementById("reset-binds-btn");
-      
+
+      const kbBtn = document.getElementById("kb-btn");
+      const kbModal = document.getElementById("kb-modal");
+      const closeKbModal = document.getElementById("close-kb-modal");
+      const kbList = document.getElementById("kb-list");
+      const resetKbBtn = document.getElementById("reset-kb-btn");
+
       const muteBtn = document.getElementById("mute-btn");
       const volumeSlider = document.getElementById("volume-slider");
 
@@ -486,6 +543,35 @@
       let isRatioApplied = false;
       let previousVolume = 1;
 
+      // Scaling Toggles
+      const scaleModes = [
+        { name: "Scale: Fit", value: "showAll" },
+        { name: "Scale: Stretch", value: "exactFit" },
+        { name: "Scale: Original", value: "noScale" }
+      ];
+      let currentScaleIdx = 0;
+
+      scaleBtn.addEventListener("click", () => {
+        scaleBtn.blur();
+        currentScaleIdx = (currentScaleIdx + 1) % scaleModes.length;
+        const currentMode = scaleModes[currentScaleIdx];
+        scaleBtn.textContent = currentMode.name;
+
+        const player = getRufflePlayer();
+        if (player) {
+          player.config = player.config || {};
+          player.config.scale = currentMode.value;
+        }
+      });
+
+      // Theater Mode Toggle
+      theaterBtn.addEventListener("click", () => {
+        theaterBtn.blur();
+        document.body.classList.toggle("theater-mode");
+        theaterBtn.style.color = document.body.classList.contains("theater-mode") ? "var(--accent-color)" : "var(--text-color)";
+      });
+
+      // FPS Logic
       let fpsActive = false;
       let realGameFrames = 0;
       let fpsIntervalId = null;
@@ -537,6 +623,90 @@
         }
       });
 
+      // Keyboard Rebinding Logic
+      const defaultKbBinds = [
+        { label: "Action / Jump", targetKey: "Space", mappedCode: "Space", mappedKey: " " },
+        { label: "Attack / Primary", targetKey: "X", mappedCode: "KeyX", mappedKey: "x" },
+        { label: "Special / Secondary", targetKey: "Z", mappedCode: "KeyZ", mappedKey: "z" },
+        { label: "Up", targetKey: "ArrowUp", mappedCode: "ArrowUp", mappedKey: "ArrowUp" },
+        { label: "Down", targetKey: "ArrowDown", mappedCode: "ArrowDown", mappedKey: "ArrowDown" },
+        { label: "Left", targetKey: "ArrowLeft", mappedCode: "ArrowLeft", mappedKey: "ArrowLeft" },
+        { label: "Right", targetKey: "ArrowRight", mappedCode: "ArrowRight", mappedKey: "ArrowRight" }
+      ];
+
+      let kbBinds = JSON.parse(localStorage.getItem("flash_kb_binds")) || JSON.parse(JSON.stringify(defaultKbBinds));
+      let kbListeningIndex = -1;
+
+      function renderKbMapperUI() {
+        kbList.innerHTML = "";
+        kbBinds.forEach((bind, idx) => {
+          const row = document.createElement("div");
+          row.className = "mapper-row";
+          row.innerHTML = `
+            <span style="font-size: 0.85rem;">${bind.label}</span>
+            <button class="bind-btn ${kbListeningIndex === idx ? 'listening' : ''}" data-kb-idx="${idx}">
+              ${kbListeningIndex === idx ? 'Press Key...' : (bind.mappedKey === ' ' ? 'Space' : bind.mappedKey.toUpperCase())}
+            </button>
+          `;
+          kbList.appendChild(row);
+        });
+
+        document.querySelectorAll("[data-kb-idx]").forEach(btn => {
+          btn.addEventListener("click", (e) => {
+            kbListeningIndex = parseInt(e.target.getAttribute("data-kb-idx"));
+            renderKbMapperUI();
+          });
+        });
+      }
+
+      resetKbBtn.addEventListener("click", () => {
+        kbBinds = JSON.parse(JSON.stringify(defaultKbBinds));
+        localStorage.removeItem("flash_kb_binds");
+        kbListeningIndex = -1;
+        renderKbMapperUI();
+      });
+
+      kbBtn.addEventListener("click", () => {
+        renderKbMapperUI();
+        kbModal.classList.add("open");
+      });
+
+      closeKbModal.addEventListener("click", () => {
+        kbModal.classList.remove("open");
+        kbListeningIndex = -1;
+      });
+
+      // Keyboard remapping interceptor
+      window.addEventListener("keydown", (e) => {
+        if (kbListeningIndex !== -1) {
+          e.preventDefault();
+          kbBinds[kbListeningIndex].mappedKey = e.key;
+          kbBinds[kbListeningIndex].mappedCode = e.code;
+          localStorage.setItem("flash_kb_binds", JSON.stringify(kbBinds));
+          kbListeningIndex = -1;
+          renderKbMapperUI();
+          return;
+        }
+
+        if (listeningIndex !== -1) return;
+
+        // Map incoming key down events if matched
+        const mapped = kbBinds.find(b => b.mappedCode === e.code);
+        if (mapped && mapped.mappedKey !== mapped.targetKey) {
+          e.stopImmediatePropagation();
+          sendKeyEvent("keydown", mapped.targetKey, mapped.targetKey);
+        }
+      }, true);
+
+      window.addEventListener("keyup", (e) => {
+        const mapped = kbBinds.find(b => b.mappedCode === e.code);
+        if (mapped && mapped.mappedKey !== mapped.targetKey) {
+          e.stopImmediatePropagation();
+          sendKeyEvent("keyup", mapped.targetKey, mapped.targetKey);
+        }
+      }, true);
+
+      // Gamepad Mapping Logic
       const defaultBinds = [
         { label: "Button A (Jump/Action)", padIndex: 0, key: "Space", code: "Space" },
         { label: "Button B (Attack/Cancel)", padIndex: 1, key: "x", code: "KeyX" },
@@ -566,7 +736,7 @@
           mapperList.appendChild(row);
         });
 
-        document.querySelectorAll(".bind-btn").forEach(btn => {
+        document.querySelectorAll("[data-idx]").forEach(btn => {
           btn.addEventListener("click", (e) => {
             listeningIndex = parseInt(e.target.getAttribute("data-idx"));
             resetConfirmState();
