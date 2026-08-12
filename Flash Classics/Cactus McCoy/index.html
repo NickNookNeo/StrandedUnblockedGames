@@ -142,7 +142,6 @@
       clip-path: inset(0px);
     }
 
-    /* Force background on native fullscreen and pseudo-backdrop */
     .player-wrapper:fullscreen,
     .player-wrapper:-webkit-full-screen {
       width: 100vw !important;
@@ -157,11 +156,12 @@
       background: radial-gradient(circle at center, #1e293b 0%, #050811 100%) !important;
     }
 
+    /* Fixed Control Bar layout */
     .control-bar {
       position: absolute;
       bottom: 0;
       left: 0;
-      right: 0;
+      width: 100%;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -170,13 +170,14 @@
       padding: 10px 16px;
       border-top: 1px solid var(--border-color);
       transform: translateY(100%);
-      transition: transform 0.2s ease-in-out;
+      transition: transform 0.25s ease-in-out;
       z-index: 50;
     }
 
+    .player-wrapper:hover .control-bar,
     .control-bar.visible,
     .control-bar:hover {
-      transform: translateY(0) !important;
+      transform: translateY(0);
     }
 
     .control-group {
@@ -422,7 +423,6 @@
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       const wrapper = document.getElementById("player-wrapper");
-      const controlBar = document.getElementById("control-bar");
       const kbModal = document.getElementById("kb-modal");
       const mapperModal = document.getElementById("mapper-modal");
       const padStatus = document.getElementById("pad-status");
@@ -457,63 +457,6 @@
       function getPlayer() {
         return document.querySelector("ruffle-embed, ruffle-object, ruffle-player, #flash-container");
       }
-
-      function updateControlBarWidth() {
-        const player = getPlayer();
-        if (!player) return;
-        
-        let targetWidth = player.clientWidth;
-        const shadowCanvas = player.shadowRoot ? player.shadowRoot.querySelector("canvas") : null;
-        
-        if (shadowCanvas && shadowCanvas.clientWidth > 0) {
-          targetWidth = shadowCanvas.clientWidth;
-        }
-
-        if (targetWidth > 0 && targetWidth <= wrapper.clientWidth) {
-          controlBar.style.width = targetWidth + "px";
-          controlBar.style.left = "50%";
-          controlBar.style.transform = "translateX(-50%) translateY(100%)";
-        } else {
-          controlBar.style.width = "100%";
-          controlBar.style.left = "0";
-          controlBar.style.transform = "translateY(100%)";
-        }
-      }
-
-      window.addEventListener("resize", updateControlBarWidth);
-      setInterval(updateControlBarWidth, 500);
-
-      let hideTimer;
-      wrapper.addEventListener("mousemove", (e) => {
-        const rect = wrapper.getBoundingClientRect();
-        if (rect.bottom - e.clientY <= 60) {
-          controlBar.classList.add("visible");
-          if (controlBar.style.width !== "100%") {
-            controlBar.style.transform = "translateX(-50%) translateY(0)";
-          } else {
-            controlBar.style.transform = "translateY(0)";
-          }
-          clearTimeout(hideTimer);
-          hideTimer = setTimeout(() => {
-            if (!controlBar.matches(':hover')) {
-              controlBar.classList.remove("visible");
-              if (controlBar.style.width !== "100%") {
-                controlBar.style.transform = "translateX(-50%) translateY(100%)";
-              } else {
-                controlBar.style.transform = "translateY(100%)";
-              }
-            }
-          }, 1500);
-        }
-      });
-      wrapper.addEventListener("mouseleave", () => {
-        controlBar.classList.remove("visible");
-        if (controlBar.style.width !== "100%") {
-          controlBar.style.transform = "translateX(-50%) translateY(100%)";
-        } else {
-          controlBar.style.transform = "translateY(100%)";
-        }
-      });
 
       document.getElementById("fs-btn").addEventListener("click", () => {
         if (!document.fullscreenElement) wrapper.requestFullscreen();
