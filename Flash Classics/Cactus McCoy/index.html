@@ -167,7 +167,7 @@
       border-radius: 0 !important;
       border: none !important;
       margin: 0 !important;
-      background: #000 !important;
+      background: radial-gradient(circle at center, #1e293b 0%, #050811 100%) !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
@@ -178,6 +178,14 @@
       max-height: 100vh !important;
       width: auto !important;
       height: 100% !important;
+      background: transparent !important;
+    }
+
+    .player-wrapper:fullscreen #flash-container,
+    .player-wrapper:fullscreen ruffle-embed,
+    .player-wrapper:fullscreen ruffle-object,
+    .player-wrapper:fullscreen ruffle-player {
+      background: transparent !important;
     }
   </style>
 
@@ -276,7 +284,7 @@
 
       document.addEventListener("mousemove", (e) => {
         const wrapperBounds = wrapper.getBoundingClientRect();
-        const triggerZoneHeight = 60;
+        const triggerZoneHeight = 24;
 
         const distanceToBottom = wrapperBounds.bottom - e.clientY;
         const isXInside = e.clientX >= wrapperBounds.left && e.clientX <= wrapperBounds.right;
