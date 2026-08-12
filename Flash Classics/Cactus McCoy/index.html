@@ -130,42 +130,49 @@
     }
 
     .player-container {
-      width: 100%;
-      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
       position: relative;
       overflow: hidden;
-      background: transparent !important;
+      margin: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
 
-    /* --- Scaling Modes CSS Control --- */
-    .scale-fit ruffle-player,
-    .scale-fit #flash-container {
+    /* --- STRICT scaling modes driven by container rules --- */
+    /* 1. FIT MODE: Perfect 4:3 Aspect Ratio maintaining room for full background glow */
+    .scale-fit {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: contain;
+    }
+
+    /* 2. STRETCH MODE: Fills whole available screen area */
+    .scale-stretch {
       width: 100% !important;
       height: 100% !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
+      aspect-ratio: auto !important;
     }
 
-    .scale-stretch ruffle-player,
-    .scale-stretch #flash-container {
-      width: 100% !important;
-      height: 100% !important;
-    }
-
-    /* Original scale centers clean native canvas */
-    .scale-original ruffle-player,
-    .scale-original #flash-container {
+    /* 3. ORIGINAL MODE: Exact native Flash dimensions (800x600) with zero clipping errors */
+    .scale-original {
       width: 800px !important;
       height: 600px !important;
       max-width: 100% !important;
       max-height: 100% !important;
-      margin: auto !important;
+      aspect-ratio: 4 / 3 !important;
     }
 
+    /* Keep Ruffle tied directly to container bounds */
     #flash-container, ruffle-embed, ruffle-object, ruffle-player {
+      width: 100% !important;
+      height: 100% !important;
       display: block !important;
-      background: transparent !important;
     }
 
     .fps-counter {
@@ -203,7 +210,7 @@
       padding: 10px 16px;
       border-top: 1px solid var(--border-color);
       transform: translateY(100%);
-      transition: transform 0.15s ease-out; /* Fast snappy animation */
+      transition: transform 0.15s ease-out;
       z-index: 50;
       pointer-events: auto;
     }
@@ -212,7 +219,7 @@
       transform: translateY(0);
     }
 
-    /* Generous hover activation radius */
+    /* Generous trigger radius */
     .hover-trigger-zone {
       position: absolute;
       bottom: 0;
@@ -375,12 +382,6 @@
       text-align: center;
     }
 
-    .bind-btn.listening {
-      background: var(--accent-color);
-      color: #000;
-      font-weight: bold;
-    }
-
     .modal-footer {
       display: flex;
       justify-content: flex-end;
@@ -400,7 +401,7 @@
       cursor: pointer;
     }
 
-    /* FULLSCREEN & BACKDROP FIX: Preserves Ambient Radial Gradient in Fullscreen Mode */
+    /* FULLSCREEN & BACKDROP FIX: Preserves Radial Gradient Surrounding 4:3 Frame */
     ::backdrop {
       background: var(--ambient-gradient) !important;
     }
@@ -445,11 +446,11 @@
   <script>
     window.RufflePlayer = window.RufflePlayer || {};
     window.RufflePlayer.config = {
-      "scale": "showAll",
-      "letterbox": "on",
+      "scale": "exactFit",
+      "letterbox": "off",
       "forceScale": true,
       "forceAlign": true,
-      "wmode": "transparent"
+      "wmode": "window"
     };
   </script>
 </head>
@@ -474,8 +475,8 @@
     
     <div class="player-container scale-fit" id="player-container">
       <object id="flash-container" type="application/x-shockwave-flash" data="cactusmccoy.swf">
-        <param name="scale" value="showAll" />
-        <param name="wmode" value="transparent" />
+        <param name="scale" value="exactFit" />
+        <param name="wmode" value="window" />
         <p>Unable to load Flash content.</p>
       </object>
     </div>
@@ -547,8 +548,6 @@
       const kbBtn = document.getElementById("kb-btn");
       const kbModal = document.getElementById("kb-modal");
       const closeKbModal = document.getElementById("close-kb-modal");
-      const kbList = document.getElementById("kb-list");
-      const resetKbBtn = document.getElementById("reset-kb-btn");
 
       const mapperModal = document.getElementById("mapper-modal");
       const closeModal = document.getElementById("close-modal");
@@ -560,9 +559,9 @@
       let previousVolume = 1;
 
       const scaleModes = [
-        { name: "Scale: Fit", class: "scale-fit", scale: "showAll", letterbox: "on" },
-        { name: "Scale: Stretch", class: "scale-stretch", scale: "exactFit", letterbox: "off" },
-        { name: "Scale: Original", class: "scale-original", scale: "noScale", letterbox: "off" }
+        { name: "Scale: Fit", class: "scale-fit" },
+        { name: "Scale: Stretch", class: "scale-stretch" },
+        { name: "Scale: Original", class: "scale-original" }
       ];
       let currentScaleIdx = 0;
 
@@ -576,17 +575,8 @@
         playerContainer.classList.remove("scale-fit", "scale-stretch", "scale-original");
         playerContainer.classList.add(mode.class);
 
-        const player = getRufflePlayer();
-        if (player) {
-          if (!player.config) player.config = {};
-          player.config.scale = mode.scale;
-          player.config.letterbox = mode.letterbox;
-
-          player.setAttribute("scale", mode.scale);
-          player.setAttribute("letterbox", mode.letterbox);
-
-          window.dispatchEvent(new Event("resize"));
-        }
+        // Dispatch resize event so Ruffle reflows to exact CSS dimensions instantly
+        window.dispatchEvent(new Event("resize"));
       }
 
       scaleBtn.addEventListener("click", () => {
@@ -597,7 +587,7 @@
         applyScaleMode(mode);
       });
 
-      /* Quick Snappy Control Bar Triggering */
+      /* Quick Hover Control Bar */
       let hideTimeout = null;
 
       function showControlBar() {
@@ -655,7 +645,7 @@
         }, 100);
       });
 
-      /* Audio & Game Controls */
+      /* Audio Controls */
       function updateVolume(val) {
         const player = getRufflePlayer();
         if (player) player.volume = val;
