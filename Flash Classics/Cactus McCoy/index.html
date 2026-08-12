@@ -450,7 +450,7 @@
       let realGameFrames = 0;
       let fpsIntervalId = null;
 
-      function startGameFpsTracking() {
+      function hookRuffleLoop() {
         const ruffleTag = document.querySelector("ruffle-embed, ruffle-object, ruffle-player");
         if (!ruffleTag) return;
 
@@ -458,37 +458,27 @@
         const canvas = shadowRoot.querySelector("canvas");
 
         if (!canvas) {
-          setTimeout(startGameFpsTracking, 200);
+          setTimeout(hookRuffleLoop, 200);
           return;
         }
 
-        const gl = canvas.getContext("webgl2") || canvas.getContext("webgl") || canvas.getContext("2d");
-        
+        const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
+
         if (gl && !canvas.dataset.fpsHooked) {
           canvas.dataset.fpsHooked = "true";
 
-          if (gl.drawArrays) {
-            const origDrawArrays = gl.drawArrays.bind(gl);
-            gl.drawArrays = function(...args) {
-              if (fpsActive) realGameFrames++;
-              return origDrawArrays(...args);
-            };
-          } else if (gl.drawElements) {
-            const origDrawElements = gl.drawElements.bind(gl);
-            gl.drawElements = function(...args) {
-              if (fpsActive) realGameFrames++;
-              return origDrawElements(...args);
-            };
-          }
+          const origClear = gl.clear.bind(gl);
+          gl.clear = function(...args) {
+            if (fpsActive) realGameFrames++;
+            return origClear(...args);
+          };
         }
+      }
 
-        fpsIntervalId = setInterval(() => {
-          if (fpsActive) {
-            const estimatedFps = Math.min(Math.round(realGameFrames / 2), 60); 
-            fpsCounter.textContent = `FPS: ${realGameFrames > 0 ? estimatedFps : 0}`;
-            realGameFrames = 0;
-          }
-        }, 1000);
+      function updateFpsDisplay() {
+        if (!fpsActive) return;
+        fpsCounter.textContent = `FPS: ${realGameFrames}`;
+        realGameFrames = 0;
       }
 
       fpsBtn.addEventListener("click", () => {
@@ -498,9 +488,12 @@
 
         if (fpsActive) {
           realGameFrames = 0;
-          startGameFpsTracking();
+          hookRuffleLoop();
+          if (fpsIntervalId) clearInterval(fpsIntervalId);
+          fpsIntervalId = setInterval(updateFpsDisplay, 1000);
         } else {
           if (fpsIntervalId) clearInterval(fpsIntervalId);
+          fpsCounter.textContent = "FPS: 00";
         }
       });
 
