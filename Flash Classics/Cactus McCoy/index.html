@@ -37,15 +37,21 @@
       transition: padding 0.3s ease;
     }
 
-    /* Header Container */
+    /* Distributed Header Container */
     .header-container {
       width: 100%;
       max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .header-top {
       display: grid;
       grid-template-columns: 140px 1fr 140px;
       align-items: center;
-      margin-bottom: 1.5rem;
-      transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
     .back-btn {
@@ -68,7 +74,7 @@
     }
 
     h1.game-title {
-      font-size: 2.25rem;
+      font-size: 2rem;
       font-weight: 800;
       margin: 0;
       text-transform: uppercase;
@@ -82,7 +88,15 @@
       text-shadow: 0 4px 20px var(--accent-glow);
     }
 
-    /* Player Container */
+    /* Sub-header Action Ribbon */
+    .header-controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    /* Player Shell */
     .player-wrapper {
       position: relative;
       display: flex;
@@ -111,6 +125,12 @@
       align-items: center;
       overflow: hidden;
       position: relative;
+    }
+
+    /* Disable aspect ratio restriction when stretching */
+    .player-container.no-ratio {
+      aspect-ratio: unset !important;
+      height: 450px;
     }
 
     #flash-container, ruffle-embed, ruffle-object, ruffle-player {
@@ -144,7 +164,7 @@
       display: block;
     }
 
-    /* Controls Bar */
+    /* Clean Overlay Controls Bar */
     .control-bar {
       position: absolute;
       bottom: 0;
@@ -158,7 +178,7 @@
       padding: 12px 20px;
       border-top: 1px solid var(--border-color);
       transform: translateY(100%);
-      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 30;
       pointer-events: none;
     }
@@ -166,7 +186,6 @@
     .control-bar.visible {
       transform: translateY(0);
       pointer-events: auto;
-      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
     }
 
     .control-group {
@@ -176,7 +195,7 @@
     }
 
     .control-btn {
-      padding: 8px 12px;
+      padding: 8px 14px;
       background-color: rgba(255, 255, 255, 0.05);
       color: var(--text-color);
       border: 1px solid var(--border-color);
@@ -232,7 +251,7 @@
     .volume-slider {
       -webkit-appearance: none;
       appearance: none;
-      width: 65px;
+      width: 75px;
       height: 4px;
       border-radius: 2px;
       background: rgba(255, 255, 255, 0.2);
@@ -256,7 +275,7 @@
       transform: scale(1.2);
     }
 
-    /* Modal Styling */
+    /* Modal Overlay Styling */
     .modal-overlay {
       position: absolute;
       inset: 0;
@@ -418,13 +437,6 @@
       height: 100% !important;
       background: transparent !important;
     }
-
-    .player-wrapper:fullscreen #flash-container,
-    .player-wrapper:fullscreen ruffle-embed,
-    .player-wrapper:fullscreen ruffle-object,
-    .player-wrapper:fullscreen ruffle-player {
-      background: transparent !important;
-    }
   </style>
 
   <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
@@ -442,9 +454,18 @@
 <body>
 
   <div class="header-container" id="header">
-    <a href="../index.html" class="back-btn">&larr; Games List</a>
-    <h1 class="game-title">Cactus McCoy</h1>
-    <div></div>
+    <div class="header-top">
+      <a href="../index.html" class="back-btn">&larr; Games List</a>
+      <h1 class="game-title">Cactus McCoy</h1>
+      <div></div>
+    </div>
+    
+    <!-- Top action strip to free up bottom bar clutter -->
+    <div class="header-controls">
+      <button class="control-btn" id="scale-btn">Scale: Fit</button>
+      <button class="control-btn" id="kb-btn">Keyboard Binds</button>
+      <button class="control-btn" id="mapper-btn">Controller Binds</button>
+    </div>
   </div>
 
   <div class="player-wrapper" id="player-wrapper" tabindex="0">
@@ -467,10 +488,6 @@
       </div>
       
       <div class="control-group">
-        <button class="control-btn" id="scale-btn">Scale: Fit</button>
-        <button class="control-btn" id="kb-btn">Keyboard</button>
-        <button class="control-btn" id="mapper-btn">Controller</button>
-
         <button class="control-btn" id="fps-btn">FPS</button>
         <button class="control-btn" id="theater-btn">Theater</button>
         <button class="control-btn" id="fs-btn">Fullscreen</button>
@@ -543,11 +560,11 @@
       let isRatioApplied = false;
       let previousVolume = 1;
 
-      // Scaling Toggles
+      // Realtime Scaling Toggle Handler
       const scaleModes = [
-        { name: "Scale: Fit", value: "showAll" },
-        { name: "Scale: Stretch", value: "exactFit" },
-        { name: "Scale: Original", value: "noScale" }
+        { name: "Scale: Fit", value: "showAll", useRatio: true },
+        { name: "Scale: Stretch", value: "exactFit", useRatio: false },
+        { name: "Scale: Original", value: "noScale", useRatio: true }
       ];
       let currentScaleIdx = 0;
 
@@ -557,10 +574,20 @@
         const currentMode = scaleModes[currentScaleIdx];
         scaleBtn.textContent = currentMode.name;
 
+        // Toggle ratio CSS depending on mode
+        if (currentMode.useRatio) {
+          playerContainer.classList.remove("no-ratio");
+        } else {
+          playerContainer.classList.add("no-ratio");
+        }
+
+        // Force dynamic update on active Ruffle instance
         const player = getRufflePlayer();
         if (player) {
-          player.config = player.config || {};
-          player.config.scale = currentMode.value;
+          player.setAttribute("scale", currentMode.value);
+          if (typeof player.requestAnimationFrame === "function") {
+            player.requestAnimationFrame(() => {});
+          }
         }
       });
 
@@ -676,7 +703,6 @@
         kbListeningIndex = -1;
       });
 
-      // Keyboard remapping interceptor
       window.addEventListener("keydown", (e) => {
         if (kbListeningIndex !== -1) {
           e.preventDefault();
@@ -690,7 +716,6 @@
 
         if (listeningIndex !== -1) return;
 
-        // Map incoming key down events if matched
         const mapped = kbBinds.find(b => b.mappedCode === e.code);
         if (mapped && mapped.mappedKey !== mapped.targetKey) {
           e.stopImmediatePropagation();
