@@ -24,7 +24,7 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: var(--bg-gradient) !important;
+      background: radial-gradient(circle at center, #1e293b 0%, #050811 100%) !important;
       background-attachment: fixed !important;
       color: var(--text-color);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -105,10 +105,19 @@
       align-items: center;
       justify-content: center;
       background: transparent !important;
-      border-radius: 0;
       overflow: hidden !important;
       border: none !important;
       box-shadow: none !important;
+    }
+
+    .game-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      overflow: hidden !important;
     }
 
     ruffle-embed, ruffle-object, ruffle-player, #flash-container {
@@ -130,18 +139,22 @@
     ruffle-object::part(canvas) {
       background: transparent !important;
       overflow: hidden !important;
+      clip-path: inset(0px);
     }
 
+    /* Force background on native fullscreen and pseudo-backdrop */
     .player-wrapper:fullscreen,
     .player-wrapper:-webkit-full-screen {
       width: 100vw !important;
       height: 100vh !important;
       max-width: 100vw !important;
       max-height: 100vh !important;
-      border-radius: 0 !important;
-      border: none !important;
-      background: var(--bg-gradient) !important;
+      background: radial-gradient(circle at center, #1e293b 0%, #050811 100%) !important;
       overflow: hidden !important;
+    }
+
+    .player-wrapper::backdrop {
+      background: radial-gradient(circle at center, #1e293b 0%, #050811 100%) !important;
     }
 
     .control-bar {
@@ -288,7 +301,7 @@
     window.RufflePlayer.config = {
       "scale": "showAll",
       "forceScale": true,
-      "letterbox": "on",
+      "letterbox": "off",
       "wmode": "transparent",
       "backgroundColor": null
     };
@@ -310,12 +323,14 @@
   </div>
 
   <div class="player-wrapper" id="player-wrapper" tabindex="0">
-    <object id="flash-container" type="application/x-shockwave-flash" data="cactusmccoy.swf">
-      <param name="scale" value="showAll" />
-      <param name="wmode" value="transparent" />
-      <param name="bgcolor" value="transparent" />
-      <p>Unable to load Flash content.</p>
-    </object>
+    <div class="game-container" id="game-container">
+      <object id="flash-container" type="application/x-shockwave-flash" data="cactusmccoy.swf">
+        <param name="scale" value="showAll" />
+        <param name="wmode" value="transparent" />
+        <param name="bgcolor" value="transparent" />
+        <p>Unable to load Flash content.</p>
+      </object>
+    </div>
 
     <div class="control-bar" id="control-bar">
       <div class="control-group">
@@ -399,7 +414,7 @@
       </div>
       <div class="bind-row">
         <span>Right Bumper (RB) ➔</span>
-        <button class="bind-key pad-btn" data-pad-btn="5">Space</button>
+        <button class="bind-key pad-bind" data-pad-btn="5">Space</button>
       </div>
     </div>
   </div>
@@ -443,18 +458,62 @@
         return document.querySelector("ruffle-embed, ruffle-object, ruffle-player, #flash-container");
       }
 
+      function updateControlBarWidth() {
+        const player = getPlayer();
+        if (!player) return;
+        
+        let targetWidth = player.clientWidth;
+        const shadowCanvas = player.shadowRoot ? player.shadowRoot.querySelector("canvas") : null;
+        
+        if (shadowCanvas && shadowCanvas.clientWidth > 0) {
+          targetWidth = shadowCanvas.clientWidth;
+        }
+
+        if (targetWidth > 0 && targetWidth <= wrapper.clientWidth) {
+          controlBar.style.width = targetWidth + "px";
+          controlBar.style.left = "50%";
+          controlBar.style.transform = "translateX(-50%) translateY(100%)";
+        } else {
+          controlBar.style.width = "100%";
+          controlBar.style.left = "0";
+          controlBar.style.transform = "translateY(100%)";
+        }
+      }
+
+      window.addEventListener("resize", updateControlBarWidth);
+      setInterval(updateControlBarWidth, 500);
+
       let hideTimer;
       wrapper.addEventListener("mousemove", (e) => {
         const rect = wrapper.getBoundingClientRect();
         if (rect.bottom - e.clientY <= 60) {
           controlBar.classList.add("visible");
+          if (controlBar.style.width !== "100%") {
+            controlBar.style.transform = "translateX(-50%) translateY(0)";
+          } else {
+            controlBar.style.transform = "translateY(0)";
+          }
           clearTimeout(hideTimer);
           hideTimer = setTimeout(() => {
-            if (!controlBar.matches(':hover')) controlBar.classList.remove("visible");
+            if (!controlBar.matches(':hover')) {
+              controlBar.classList.remove("visible");
+              if (controlBar.style.width !== "100%") {
+                controlBar.style.transform = "translateX(-50%) translateY(100%)";
+              } else {
+                controlBar.style.transform = "translateY(100%)";
+              }
+            }
           }, 1500);
         }
       });
-      wrapper.addEventListener("mouseleave", () => controlBar.classList.remove("visible"));
+      wrapper.addEventListener("mouseleave", () => {
+        controlBar.classList.remove("visible");
+        if (controlBar.style.width !== "100%") {
+          controlBar.style.transform = "translateX(-50%) translateY(100%)";
+        } else {
+          controlBar.style.transform = "translateY(100%)";
+        }
+      });
 
       document.getElementById("fs-btn").addEventListener("click", () => {
         if (!document.fullscreenElement) wrapper.requestFullscreen();
