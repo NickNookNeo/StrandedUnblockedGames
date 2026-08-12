@@ -104,11 +104,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--bg-gradient) !important;
-      border-radius: 12px;
+      background: transparent !important;
+      border-radius: 0;
       overflow: hidden !important;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+      border: none !important;
+      box-shadow: none !important;
     }
 
     ruffle-embed, ruffle-object, ruffle-player, #flash-container {
@@ -124,14 +124,11 @@
 
     ruffle-player::part(container),
     ruffle-embed::part(container),
-    ruffle-object::part(container) {
-      background: transparent !important;
-      overflow: hidden !important;
-    }
-
+    ruffle-object::part(container),
     ruffle-player::part(canvas),
     ruffle-embed::part(canvas),
     ruffle-object::part(canvas) {
+      background: transparent !important;
       overflow: hidden !important;
     }
 
@@ -290,7 +287,7 @@
     window.RufflePlayer = window.RufflePlayer || {};
     window.RufflePlayer.config = {
       "scale": "showAll",
-      "forceScale": false,
+      "forceScale": true,
       "letterbox": "on",
       "wmode": "transparent",
       "backgroundColor": null
@@ -339,35 +336,35 @@
         <button class="close-modal-btn" id="close-kb">&times;</button>
       </div>
       <div class="bind-row">
-        <span>Left Arrow Emulates</span>
+        <span>Left Arrow ➔</span>
         <button class="bind-key kb-bind" data-target="ArrowLeft">ArrowLeft</button>
       </div>
       <div class="bind-row">
-        <span>Right Arrow Emulates</span>
+        <span>Right Arrow ➔</span>
         <button class="bind-key kb-bind" data-target="ArrowRight">ArrowRight</button>
       </div>
       <div class="bind-row">
-        <span>Up Arrow Emulates</span>
+        <span>Up Arrow ➔</span>
         <button class="bind-key kb-bind" data-target="ArrowUp">ArrowUp</button>
       </div>
       <div class="bind-row">
-        <span>Down Arrow Emulates</span>
+        <span>Down Arrow ➔</span>
         <button class="bind-key kb-bind" data-target="ArrowDown">ArrowDown</button>
       </div>
       <div class="bind-row">
-        <span>Key 'A' Emulates</span>
+        <span>Key 'A' ➔</span>
         <button class="bind-key kb-bind" data-target="KeyA">A</button>
       </div>
       <div class="bind-row">
-        <span>Key 'S' Emulates</span>
+        <span>Key 'S' ➔</span>
         <button class="bind-key kb-bind" data-target="KeyS">S</button>
       </div>
       <div class="bind-row">
-        <span>Key 'D' Emulates</span>
+        <span>Key 'D' ➔</span>
         <button class="bind-key kb-bind" data-target="KeyD">D</button>
       </div>
       <div class="bind-row">
-        <span>Spacebar Emulates</span>
+        <span>Spacebar ➔</span>
         <button class="bind-key kb-bind" data-target="Space">Space</button>
       </div>
     </div>
@@ -381,28 +378,28 @@
       </div>
       <p style="font-size: 0.8rem; color: #38bdf8; margin: 0;" id="pad-status">Searching for controller...</p>
       <div class="bind-row">
-        <span>Button A Emulates Key</span>
+        <span>Button A ➔</span>
         <button class="bind-key pad-bind" data-pad-btn="0">A</button>
       </div>
       <div class="bind-row">
-        <span>Button B Emulates Key</span>
+        <span>Button B ➔</span>
         <button class="bind-key pad-bind" data-pad-btn="1">S</button>
       </div>
       <div class="bind-row">
-        <span>Button X Emulates Key</span>
+        <span>Button X ➔</span>
         <button class="bind-key pad-bind" data-pad-btn="2">A</button>
       </div>
       <div class="bind-row">
-        <span>Button Y Emulates Key</span>
+        <span>Button Y ➔</span>
         <button class="bind-key pad-bind" data-pad-btn="3">D</button>
       </div>
       <div class="bind-row">
-        <span>Left Bumper LB Emulates</span>
-        <button class="bind-key pad-bind" data-pad-btn="4">ArrowLeft</button>
+        <span>Left Bumper (LB) ➔</span>
+        <button class="bind-key pad-bind" data-pad-btn="4">ShiftLeft</button>
       </div>
       <div class="bind-row">
-        <span>Right Bumper RB Emulates</span>
-        <button class="bind-key pad-bind" data-pad-btn="5">ArrowRight</button>
+        <span>Right Bumper (RB) ➔</span>
+        <button class="bind-key pad-btn" data-pad-btn="5">Space</button>
       </div>
     </div>
   </div>
@@ -427,7 +424,8 @@
         KeyA:       { key: "a",          code: "KeyA",       keyCode: 65 },
         KeyS:       { key: "s",          code: "KeyS",       keyCode: 83 },
         KeyD:       { key: "d",          code: "KeyD",       keyCode: 68 },
-        Space:      { key: " ",          code: "Space",      keyCode: 32 }
+        Space:      { key: " ",          code: "Space",      keyCode: 32 },
+        ShiftLeft:  { key: "Shift",      code: "ShiftLeft",  keyCode: 16 }
       };
 
       const controllerBinds = {
@@ -435,8 +433,8 @@
         1: keyMap.KeyS,
         2: keyMap.KeyA,
         3: keyMap.KeyD,
-        4: keyMap.ArrowLeft,
-        5: keyMap.ArrowRight
+        4: keyMap.ShiftLeft,
+        5: keyMap.Space
       };
 
       const activePadState = {};
@@ -502,7 +500,7 @@
           activeListeningBtn = e.target;
           listeningType = btn.classList.contains("kb-bind") ? "kb" : "pad";
           activeListeningBtn.classList.add("listening");
-          activeListeningBtn.textContent = "Press Input Key...";
+          activeListeningBtn.textContent = "Press Key...";
         });
       });
 
