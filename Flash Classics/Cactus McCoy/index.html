@@ -53,7 +53,7 @@
       font-size: 0.9rem;
       font-weight: 600;
       border: 1px solid var(--border-color);
-      transition: background-color 0.2s, transform 0.1s, color 0.2s;
+      transition: background-color 0.2s, color 0.2s;
     }
 
     .back-btn:hover {
@@ -81,14 +81,6 @@
       border: 1px solid var(--border-color);
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
       transition: max-width 0.3s ease;
-    }
-
-    .player-wrapper.hide-cursor {
-      cursor: none;
-    }
-
-    .player-wrapper.hide-cursor * {
-      cursor: none !important;
     }
 
     .player-container {
@@ -121,7 +113,7 @@
       padding: 12px 20px;
       border-top: 1px solid var(--border-color);
       transform: translateY(100%);
-      transition: transform 0.15s ease-out;
+      transition: transform 0.1s linear;
       z-index: 30;
       pointer-events: none;
     }
@@ -145,13 +137,12 @@
       cursor: pointer;
       font-size: 0.85rem;
       font-weight: 600;
-      transition: background-color 0.2s, color 0.2s, transform 0.1s, border-color 0.2s;
+      transition: background-color 0.2s, color 0.2s, transform 0.1s;
     }
 
     .control-btn:hover {
       background-color: var(--card-hover);
       color: var(--accent-color);
-      border-color: rgba(56, 189, 248, 0.4);
     }
 
     .control-btn:active {
@@ -162,6 +153,7 @@
       outline: none;
     }
 
+    /* Fixed Fullscreen Rules */
     .player-wrapper:fullscreen {
       width: 100vw !important;
       height: 100vh !important;
@@ -170,23 +162,18 @@
       border-radius: 0 !important;
       border: none !important;
       margin: 0 !important;
-      background: radial-gradient(circle at center, #1e293b 0%, #050811 100%) !important;
+      background: #000 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
     }
 
     .player-wrapper:fullscreen .player-container {
-      width: 100vw !important;
-      height: 100vh !important;
-      aspect-ratio: auto !important;
-      background: transparent !important;
-    }
-
-    .player-wrapper:fullscreen #flash-container,
-    .player-wrapper:fullscreen ruffle-embed,
-    .player-wrapper:fullscreen ruffle-object,
-    .player-wrapper:fullscreen ruffle-player {
-      width: 100vw !important;
-      height: 100vh !important;
-      background: transparent !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: contain;
     }
   </style>
 
@@ -239,7 +226,6 @@
 
       let isPaused = false;
       let hideTimeout = null;
-      let cursorTimeout = null;
       let isRatioApplied = false;
 
       function getRufflePlayer() {
@@ -284,18 +270,6 @@
       function hideBarImmediately() {
         clearTimeout(hideTimeout);
         controlBar.classList.remove("visible");
-        wrapper.classList.remove("hide-cursor");
-      }
-
-      function handleCursorInactivity() {
-        clearTimeout(cursorTimeout);
-        wrapper.classList.remove("hide-cursor");
-
-        cursorTimeout = setTimeout(() => {
-          if (!controlBar.classList.contains("visible")) {
-            wrapper.classList.add("hide-cursor");
-          }
-        }, 2000);
       }
 
       document.addEventListener("mousemove", (e) => {
@@ -316,7 +290,6 @@
         if (isAtBottomWindow || isAtBottomWrapper || isHoveringBar) {
           clearTimeout(hideTimeout);
           controlBar.classList.add("visible");
-          wrapper.classList.remove("hide-cursor");
         } else {
           clearTimeout(hideTimeout);
           hideTimeout = setTimeout(() => {
@@ -325,13 +298,7 @@
         }
       });
 
-      wrapper.addEventListener("mousemove", handleCursorInactivity);
-
-      wrapper.addEventListener("mouseleave", () => {
-        hideBarImmediately();
-        clearTimeout(cursorTimeout);
-      });
-
+      wrapper.addEventListener("mouseleave", hideBarImmediately);
       window.addEventListener("mouseleave", hideBarImmediately);
 
       playerContainer.addEventListener("click", () => {
