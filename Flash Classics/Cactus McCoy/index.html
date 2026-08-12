@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cactus McCoy</title>
+  <title>Flash Game Player</title>
   <style>
     *, *::before, *::after {
       box-sizing: border-box;
@@ -38,6 +38,7 @@
       align-items: center;
       justify-content: space-between;
       margin-bottom: 1.5rem;
+      transition: max-width 0.3s ease;
     }
 
     .back-btn {
@@ -77,6 +78,7 @@
       overflow: hidden;
       border: 1px solid var(--border-color);
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+      transition: max-width 0.3s ease;
     }
 
     .player-container {
@@ -96,7 +98,6 @@
       background: transparent !important;
     }
 
-    /* Auto-hiding Control Bar */
     .control-bar {
       position: absolute;
       bottom: 0;
@@ -144,7 +145,6 @@
       transform: scale(0.95);
     }
 
-    /* Fullscreen Mode */
     .player-wrapper:fullscreen {
       width: 100vw !important;
       height: 100vh !important;
@@ -215,6 +215,7 @@
     window.addEventListener("DOMContentLoaded", () => {
       const wrapper = document.getElementById("player-wrapper");
       const playerContainer = document.getElementById("player-container");
+      const header = document.getElementById("header");
       const controlBar = document.getElementById("control-bar");
       const fsBtn = document.getElementById("fs-btn");
       const playPauseBtn = document.getElementById("play-pause-btn");
@@ -222,7 +223,7 @@
 
       let isPaused = false;
       let hideTimeout = null;
-      let dimensionsApplied = false;
+      let isRatioApplied = false;
 
       function getRufflePlayer() {
         const obj = document.getElementById("flash-container");
@@ -234,32 +235,35 @@
         return null;
       }
 
-      function applyDimensions(width, height) {
-        if (!width || !height || dimensionsApplied) return;
+      function setDynamicAspectRatio(width, height) {
+        if (!width || !height || isRatioApplied) return;
         
-        // Sets aspect ratio without constraining or shrinking element max-widths
         playerContainer.style.aspectRatio = `${width} / ${height}`;
-        dimensionsApplied = true;
+        isRatioApplied = true;
       }
 
-      const observer = new MutationObserver(() => {
+      const checkMetadata = () => {
         const player = getRufflePlayer();
         if (player) {
-          player.addEventListener("loadedmetadata", () => {
-            const meta = player.metadata || (player.ruffle && player.ruffle().metadata);
-            if (meta) applyDimensions(meta.width, meta.height);
-          });
-
           const meta = player.metadata || (player.ruffle && player.ruffle().metadata);
-          if (meta) applyDimensions(meta.width, meta.height);
-          
-          observer.disconnect();
+          if (meta && meta.width && meta.height) {
+            setDynamicAspectRatio(meta.width, meta.height);
+          } else if (typeof player.addEventListener === "function") {
+            player.addEventListener("loadedmetadata", () => {
+              const loadedMeta = player.metadata || (player.ruffle && player.ruffle().metadata);
+              if (loadedMeta) setDynamicAspectRatio(loadedMeta.width, loadedMeta.height);
+            });
+          }
         }
-      });
+      };
 
-      observer.observe(document.body, { childList: true, subtree: true });
+      const metaInterval = setInterval(() => {
+        checkMetadata();
+        if (isRatioApplied) clearInterval(metaInterval);
+      }, 100);
 
-      /* Fast Bottom Edge Triggering */
+      setTimeout(() => clearInterval(metaInterval), 5000);
+
       function hideBarImmediately() {
         clearTimeout(hideTimeout);
         controlBar.classList.remove("visible");
@@ -294,7 +298,6 @@
       wrapper.addEventListener("mouseleave", hideBarImmediately);
       window.addEventListener("mouseleave", hideBarImmediately);
 
-      /* Catch clicks on Ruffle's built-in overlay to sync custom button */
       playerContainer.addEventListener("click", () => {
         if (isPaused) {
           isPaused = false;
@@ -302,9 +305,8 @@
         }
       });
 
-      /* Play/Pause Button Logic */
       playPauseBtn.addEventListener("click", (e) => {
-        e.stopPropagation(); // Prevents playerContainer click handler from firing
+        e.stopPropagation();
         const player = getRufflePlayer();
         if (!player) return;
 
