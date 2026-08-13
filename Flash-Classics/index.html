@@ -397,6 +397,10 @@
     <div class="tags-container" id="tags-container">
       <button class="tag-pill active" data-tag="all">All Tags</button>
     </div>
+
+    <div class="tags-container" id="creator-container" style="margin-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.75rem;">
+      <button class="tag-pill active" data-creator="all">All Creators</button>
+    </div>
   </header>
 
   <div id="recent-section" style="width: 100%; max-width: 1200px; display: none;">
@@ -420,12 +424,29 @@
       const searchInput = document.getElementById("search-input");
       const autocompleteDropdown = document.getElementById("autocomplete-dropdown");
       const tagsContainer = document.getElementById("tags-container");
+      const creatorContainer = document.getElementById("creator-container");
       const randomBtn = document.getElementById("random-btn");
       const scrollTopBtn = document.getElementById("scroll-top-btn");
       
       let allGames = [];
       let currentFilterTab = "all";
       let currentTag = "all";
+      let currentCreator = "all";
+      
+      // Read creator from URL parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const creatorParam = urlParams.get("creator");
+      if (creatorParam) {
+        currentCreator = decodeURIComponent(creatorParam);
+      }
+
+      // Update header based on creator parameter
+      const headerH1 = document.querySelector("header h1");
+      const headerSubtitle = document.querySelector(".subtitle");
+      if (currentCreator !== "all" && creatorParam) {
+        headerH1.textContent = currentCreator;
+        headerSubtitle.textContent = `Browse ${currentCreator} games`;
+      }
       
       const FAV_KEY = "flash_favorites";
       const HISTORY_KEY = "flash_history";
@@ -460,30 +481,35 @@
         const favs = getFavorites();
         const isFav = favs.includes(game.file);
 
+        // Merge with full game data to get year and other metadata
+        const fullGameData = allGames.find(g => g.file === game.file) || game;
+        const displayGame = { ...fullGameData, ...game }; // game properties override if present
+
         const card = document.createElement("a");
-        const w = game.width ? `&w=${game.width}` : '';
-        const h = game.height ? `&h=${game.height}` : '';
-        card.href = `player.html?game=${encodeURIComponent(game.file)}&title=${encodeURIComponent(game.title)}${w}${h}`;
+        const w = displayGame.width ? `&w=${displayGame.width}` : '';
+        const h = displayGame.height ? `&h=${displayGame.height}` : '';
+        card.href = `player.html?game=${encodeURIComponent(displayGame.file)}&title=${encodeURIComponent(displayGame.title)}${w}${h}`;
         card.className = "game-card";
         
-        card.addEventListener("click", () => addToHistory(game));
+        card.addEventListener("click", () => addToHistory(displayGame));
 
-        const tagsHtml = (game.tags || []).map(t => `<span class="card-tag">${t}</span>`).join("");
+        const tagsHtml = (displayGame.tags || []).map(t => `<span class="card-tag">${t}</span>`).join("");
 
         card.innerHTML = `
           <div class="card-image-wrap">
             <button class="fav-btn ${isFav ? 'is-fav' : ''}" title="Favorite">
               ${isFav ? '❤️' : '🤍'}
             </button>
-            <img src="assets/${game.thumbnail || 'default.jpg'}" alt="${game.title}" loading="lazy">
+            <img src="assets/${displayGame.thumbnail || 'default.jpg'}" alt="${displayGame.title}" loading="lazy">
           </div>
           <div class="card-content">
-            <h3>${game.title}</h3>
+            <h3>${displayGame.title}</h3>
+            <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.3rem;">${displayGame.year || '-'}</div>
             <div class="card-tags">${tagsHtml}</div>
           </div>
         `;
 
-        card.querySelector(".fav-btn").addEventListener("click", (e) => toggleFavorite(game.file, e));
+        card.querySelector(".fav-btn").addEventListener("click", (e) => toggleFavorite(displayGame.file, e));
         container.appendChild(card);
       }
 
@@ -492,7 +518,8 @@
         try { history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; } catch(e) {}
         
         recentGrid.innerHTML = "";
-        if (history.length > 0 && currentFilterTab === "all" && currentTag === "all" && !searchInput.value) {
+        // Only show recently played when: no creator filter, all tags selected, all favorites selected, and no search
+        if (history.length > 0 && currentFilterTab === "all" && currentTag === "all" && currentCreator === "all" && !searchInput.value) {
           recentSection.style.display = "block";
           history.forEach(game => renderCard(game, recentGrid));
         } else {
@@ -511,6 +538,33 @@
           btn.setAttribute("data-tag", tag);
           btn.textContent = tag.toUpperCase();
           tagsContainer.appendChild(btn);
+        });
+      }
+
+      function getGameCreators(game) {
+        const values = [];
+        if (Array.isArray(game.creators)) {
+          values.push(...game.creators.filter(Boolean));
+        }
+        if (game.creator) {
+          values.push(game.creator);
+        }
+        return Array.from(new Set(values.filter(Boolean)));
+      }
+
+      function renderCreatorsList(games) {
+        const creatorsSet = new Set();
+        games.forEach(g => {
+          getGameCreators(g).forEach(creator => creatorsSet.add(creator));
+        });
+        
+        creatorContainer.innerHTML = `<button class="tag-pill ${currentCreator === 'all' ? 'active' : ''}" data-creator="all">All Creators</button>`;
+        Array.from(creatorsSet).sort().forEach(creator => {
+          const btn = document.createElement("button");
+          btn.className = `tag-pill ${currentCreator === creator ? 'active' : ''}`;
+          btn.setAttribute("data-creator", creator);
+          btn.textContent = creator;
+          creatorContainer.appendChild(btn);
         });
       }
 
@@ -552,6 +606,10 @@
         let filtered = allGames.filter(game => {
           if (currentFilterTab === "favs" && !favs.includes(game.file)) return false;
           if (currentTag !== "all" && (!(game.tags || []).includes(currentTag))) return false;
+          if (currentCreator !== "all") {
+            const creatorMatch = getGameCreators(game).includes(currentCreator);
+            if (!creatorMatch) return false;
+          }
           if (query && !game.title.toLowerCase().includes(query)) return false;
           return true;
         });
@@ -574,6 +632,7 @@
         let pool = allGames.filter(game => {
           if (currentFilterTab === "favs" && !favs.includes(game.file)) return false;
           if (currentTag !== "all" && (!(game.tags || []).includes(currentTag))) return false;
+          if (currentCreator !== "all" && !getGameCreators(game).includes(currentCreator)) return false;
           if (query && !game.title.toLowerCase().includes(query)) return false;
           return true;
         });
@@ -595,6 +654,14 @@
         .then(games => {
           allGames = games;
           renderTagsList(allGames);
+          renderCreatorsList(allGames);
+          
+          // Update title based on creator filter
+          const libraryTitle = document.getElementById("library-title");
+          if (currentCreator !== "all") {
+            libraryTitle.textContent = `🎮 ${currentCreator}`;
+          }
+          
           applyFilters();
         })
         .catch(error => {
@@ -635,9 +702,30 @@
 
       tagsContainer.addEventListener("click", (e) => {
         if (e.target.classList.contains("tag-pill")) {
-          document.querySelectorAll(".tag-pill").forEach(p => p.classList.remove("active"));
+          document.querySelectorAll("#tags-container .tag-pill").forEach(p => p.classList.remove("active"));
           e.target.classList.add("active");
           currentTag = e.target.getAttribute("data-tag");
+          applyFilters();
+        }
+      });
+
+      creatorContainer.addEventListener("click", (e) => {
+        if (e.target.classList.contains("tag-pill")) {
+          document.querySelectorAll("#creator-container .tag-pill").forEach(p => p.classList.remove("active"));
+          e.target.classList.add("active");
+          currentCreator = e.target.getAttribute("data-creator");
+          
+          // Update URL and title
+          const libraryTitle = document.getElementById("library-title");
+          if (currentCreator !== "all") {
+            libraryTitle.textContent = `🎮 ${currentCreator}`;
+            const creatorName = currentCreator.replace(/-/g, " ");
+            window.history.replaceState(null, null, `?creator=${currentCreator}`);
+          } else {
+            libraryTitle.textContent = "🎮 All Games";
+            window.history.replaceState(null, null, "?");
+          }
+          
           applyFilters();
         }
       });

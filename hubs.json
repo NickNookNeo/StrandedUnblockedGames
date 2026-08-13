@@ -6,6 +6,18 @@
     "tags": ["Flash", "Retro", "Games"]
   },
   {
+    "title": "Henry Stickman Collection",
+    "url": "Flash-Classics/index.html?creator=Henry%20Stickman",
+    "thumbnail": "henry_collection.jpg",
+    "tags": ["Flash", "Henry Stickman", "Collection"]
+  },
+  {
+    "title": "Fancy Pants Adventures",
+    "url": "Flash-Classics/index.html?creator=Fancy%20Pants",
+    "thumbnail": "fancypants_adventure.jpg",
+    "tags": ["Flash", "Fancy Pants", "Collection"]
+  },
+  {
     "title": "Super Mario 64",
     "url": "Mario64/index.html",
     "thumbnail": "mario.jpg",

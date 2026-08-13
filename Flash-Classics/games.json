@@ -2,6 +2,9 @@
   {
     "file": "mario_combat.swf",
     "title": "Mario Combat",
+    "year": 2009,
+    "creator": "Armor Games",
+    "creators": ["Armor Games", "Fan Game"],
     "thumbnail": "mario_combat.jpg",
     "tags": ["action", "fighting", "arcade"],
     "width": 1920,
@@ -10,6 +13,8 @@
   {
     "file": "cactus_mccoy.swf",
     "title": "Cactus McCoy",
+    "year": 2011,
+    "creator": "Flipline Studios",
     "thumbnail": "cactus_mccoy.jpg",
     "tags": ["action", "platformer", "adventure"],
     "width": 608,
@@ -18,6 +23,8 @@
   {
     "file": "papalouie.swf",
     "title": "Papa Louie",
+    "year": 2007,
+    "creator": "Flipline Studios",
     "thumbnail": "papalouie.jpg",
     "tags": ["platformer", "puzzle", "educational"],
     "width": 550,
@@ -26,9 +33,42 @@
   {
     "file": "fpadvent_1.swf",
     "title": "Fancy Pants Adventure 1",
+    "year": 2006,
+    "creator": "Fancy Pants",
     "thumbnail": "fancypants_adventure.jpg",
     "tags": ["platformer", "exploration", "atmospheric"],
     "width": 720,
     "height": 480
+  },
+  {
+    "file": "fpadvent_2.swf",
+    "title": "Fancy Pants Adventure 2",
+    "year": 2008,
+    "creator": "Fancy Pants",
+    "thumbnail": "fancypants_adventure.jpg",
+    "tags": ["platformer", "exploration", "atmospheric"],
+    "width": 720,
+    "height": 480
+  },
+  {
+    "file": "henry_bank.swf",
+    "title": "Henry Stickmin: Breaking The Bank",
+    "year": 2012,
+    "creator": "Henry Stickman",
+    "thumbnail": "henry_bank.jpg",
+    "tags": ["action", "platformer", "adventure"],
+    "width": 800,
+    "height": 600
+  },
+  {
+    "file": "portal_flash.swf",
+    "title": "Portal Flash",
+    "year": 2011,
+    "creator": "Armor Games",
+    "creators": ["Armor Games", "Fan Game"],
+    "thumbnail": "portal_flash.jpg",
+    "tags": ["puzzle", "science fiction", "atmospheric"],
+    "width": 1920,
+    "height": 1080
   }
 ]

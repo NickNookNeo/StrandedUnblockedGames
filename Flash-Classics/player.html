@@ -107,7 +107,9 @@
       align-items: center;
       justify-content: center;
       overflow: visible;
-      /* width/height set by JS to native SWF size, then CSS-scaled */
+      /* width/height set by JS to native SWF size; transform-scaled to fit screen */
+      flex-shrink: 0;
+      z-index: 50;
     }
 
     .screen-perspective {
@@ -215,16 +217,17 @@
 
     /* Tiny strip at the very bottom — hard to hit by accident */
     .control-hover-trigger {
-      position: absolute;
+      position: fixed;
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 6px;
+      height: 8px;
       z-index: 120;
+      cursor: pointer;
     }
 
     .control-bar {
-      position: absolute;
+      position: fixed;
       bottom: 0;
       left: 0;
       width: 100%;
@@ -420,6 +423,8 @@
     <div class="header-controls">
       <button class="control-btn" id="kb-btn">Keyboard Binds</button>
       <button class="control-btn" id="mapper-btn">Controller Binds</button>
+      <button class="control-btn" id="info-btn">Game Info</button>
+      <button class="control-btn" id="notes-btn">Notes</button>
     </div>
   </div>
 
@@ -430,21 +435,28 @@
           <div class="retro-crt-overlay"></div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div class="control-hover-trigger"></div>
-      <div class="control-bar" id="control-bar">
-        <div class="control-group">
-          <button class="control-btn" id="play-pause-btn">Pause</button>
-          <button class="control-btn" id="reload-btn">Restart</button>
-          <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.05" value="1" title="Volume">
-        </div>
-        <div class="control-group">
-          <button class="control-btn" id="fx-modal-btn">Visual FX</button>
-          <button class="control-btn" id="ambient-btn">Ambient</button>
-          <button class="control-btn" id="theater-btn">Theater</button>
-          <button class="control-btn" id="fs-btn">Fullscreen</button>
-        </div>
-      </div>
+  <!-- Control Bar (outside game-viewport so it stays at full screen resolution) -->
+  <div class="control-hover-trigger"></div>
+  <div class="control-bar" id="control-bar">
+    <div class="control-group">
+      <button class="control-btn" id="play-pause-btn">Pause</button>
+      <button class="control-btn" id="reload-btn">Restart</button>
+      <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.05" value="1" title="Volume">
+      <span id="playtime-display" style="font-size: 0.65rem; color: #94a3b8; min-width: 45px; text-align: center;">0:00</span>
+    </div>
+    <div class="control-group">
+      <button class="control-btn" id="zoom-out-btn" title="Zoom Out">−</button>
+      <span id="zoom-display" style="font-size: 0.65rem; color: #94a3b8; min-width: 35px; text-align: center;">100%</span>
+      <button class="control-btn" id="zoom-in-btn" title="Zoom In">+</button>
+    </div>
+    <div class="control-group">
+      <button class="control-btn" id="fx-modal-btn">Visual FX</button>
+      <button class="control-btn" id="ambient-btn">Ambient</button>
+      <button class="control-btn" id="theater-btn">Theater</button>
+      <button class="control-btn" id="fs-btn">Fullscreen</button>
     </div>
   </div>
 
@@ -503,6 +515,37 @@
     </div>
   </div>
 
+  <!-- Game Info Modal -->
+  <div class="modal-overlay" id="info-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="info-title">Game Info</h3>
+        <button class="close-modal-btn" id="close-info">&times;</button>
+      </div>
+      <div id="info-content" style="font-size: 0.8rem; color: #cbd5e1; line-height: 1.6;">
+        <p id="info-year" style="margin: 0 0 0.5rem 0;"><strong>Year:</strong> <span id="info-year-val">-</span></p>
+        <p id="info-tags" style="margin: 0 0 0.5rem 0;"><strong>Tags:</strong> <span id="info-tags-list">-</span></p>
+        <p id="info-playtime" style="margin: 0 0 0.5rem 0;"><strong>Total Playtime:</strong> <span id="info-playtime-val">0:00</span></p>
+        <p id="info-lastsession" style="margin: 0;"><strong>Last Played:</strong> <span id="info-lastsession-val">-</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes Modal -->
+  <div class="modal-overlay" id="notes-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Game Notes</h3>
+        <button class="close-modal-btn" id="close-notes">&times;</button>
+      </div>
+      <textarea id="notes-textarea" style="width: 100%; height: 150px; padding: 0.5rem; background: rgba(30,41,59,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #f8fafc; font-family: monospace; font-size: 0.8rem; resize: vertical;"></textarea>
+      <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button class="control-btn" id="notes-clear">Clear</button>
+        <button class="control-btn" id="notes-save" style="border-color: #38bdf8;">Save</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       const urlParams = new URLSearchParams(window.location.search);
@@ -536,11 +579,23 @@
       const fxModal = document.getElementById("fx-modal");
       const kbModal = document.getElementById("kb-modal");
       const mapperModal = document.getElementById("mapper-modal");
+      const infoModal = document.getElementById("info-modal");
+      const notesModal = document.getElementById("notes-modal");
       const padStatus = document.getElementById("pad-status");
       const volumeSlider = document.getElementById("volume-slider");
       const ambientBtn = document.getElementById("ambient-btn");
+      const playtimeDisplay = document.getElementById("playtime-display");
 
-      const savedVolume = localStorage.getItem("flash_player_volume");
+      // Per-game storage keys
+      const gameStorageKey = `flash_game_${gameFile}`;
+      const volumeKey = `${gameStorageKey}_volume`;
+      const zoomKey = `${gameStorageKey}_zoom`;
+      const notesKey = `${gameStorageKey}_notes`;
+      const playtimeKey = `${gameStorageKey}_playtime`;
+      const lastSessionKey = `${gameStorageKey}_lastsession`;
+
+      // Load per-game volume
+      const savedVolume = localStorage.getItem(volumeKey);
       if (savedVolume !== null) {
         volumeSlider.value = savedVolume;
       }
@@ -551,6 +606,65 @@
           else player.volume = val;
         }
       }
+
+      // Playtime tracking
+      let sessionStartTime = Date.now();
+      let totalPlaytime = 0;
+      
+      function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+      }
+
+      function loadGameStats() {
+        const savedPlaytime = localStorage.getItem(playtimeKey);
+        if (savedPlaytime) totalPlaytime = parseInt(savedPlaytime);
+        updatePlaytimeDisplay();
+      }
+
+      function updatePlaytimeDisplay() {
+        const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+        playtimeDisplay.textContent = formatTime(totalPlaytime + elapsed);
+      }
+
+      function saveGameStats() {
+        const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+        localStorage.setItem(playtimeKey, totalPlaytime + elapsed);
+        localStorage.setItem(lastSessionKey, new Date().toLocaleString());
+      }
+
+      // Update playtime every second
+      setInterval(updatePlaytimeDisplay, 1000);
+
+      // Save stats when leaving
+      window.addEventListener("beforeunload", saveGameStats);
+
+      // Load game metadata
+      let gameMetadata = null;
+      fetch("games.json")
+        .then(r => r.json())
+        .then(games => {
+          gameMetadata = games.find(g => g.file === gameFile);
+          if (gameMetadata) {
+            // Display game info
+            document.getElementById("info-title").textContent = gameMetadata.title;
+            document.getElementById("info-year-val").textContent = gameMetadata.year || "-";
+            const tagsList = (gameMetadata.tags || []).join(", ");
+            document.getElementById("info-tags-list").textContent = tagsList || "None";
+            updateGameInfo();
+          }
+        })
+        .catch(e => console.error("Error loading games.json:", e));
+
+      function updateGameInfo() {
+        const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+        document.getElementById("info-playtime-val").textContent = formatTime(totalPlaytime + elapsed);
+        const lastSession = localStorage.getItem(lastSessionKey);
+        document.getElementById("info-lastsession-val").textContent = lastSession || "Never";
+      }
+
+      let currentZoom = 1.0;
 
       function updateContainerAspect() {
         const wrapperWidth = wrapper.clientWidth;
@@ -563,18 +677,23 @@
         // Keep Ruffle at native SWF resolution (preserves masks / HUD layout)
         player.style.width = swfWidth + "px";
         player.style.height = swfHeight + "px";
-        player.style.maxWidth = swfWidth + "px";
-        player.style.maxHeight = swfHeight + "px";
+        player.style.minWidth = swfWidth + "px";
+        player.style.minHeight = swfHeight + "px";
 
-        // Scale the whole viewport (game + control bar) to fit available space
-        const scale = Math.min(wrapperWidth / swfWidth, wrapperHeight / swfHeight);
+        // Calculate fit-to-viewport scale (without user zoom)
+        // Reserve space at bottom for control bar (approx 50px)
+        const effectiveHeight = wrapperHeight - 50;
+        const fitScale = Math.min(wrapperWidth / swfWidth, effectiveHeight / swfHeight);
+        const totalScale = fitScale * currentZoom;
+
+        // Apply transform scaling to game viewport only (control bar is outside, stays at full resolution)
         gameViewport.style.width = swfWidth + "px";
         gameViewport.style.height = swfHeight + "px";
-        gameViewport.style.transform = "scale(" + scale + ")";
+        gameViewport.style.transform = "scale(" + totalScale + ")";
         gameViewport.style.transformOrigin = "center center";
 
-        // Counter-scale CRT scanlines so they stay ~3-4 screen pixels after transform
-        const linePx = Math.max(3.5 / scale, 0.4);
+        // Counter-scale CRT scanlines to stay readable
+        const linePx = Math.max(3.5 / totalScale, 0.4);
         gameViewport.style.setProperty("--scanline-size", linePx + "px");
       }
 
@@ -583,6 +702,7 @@
         if (!forcedHeight && player.metadata?.height) forcedHeight = player.metadata.height;
         updateContainerAspect();
         applyVolume(parseFloat(volumeSlider.value));
+        loadGameStats();
       });
 
       window.addEventListener("resize", updateContainerAspect);
@@ -674,13 +794,77 @@
       volumeSlider.addEventListener("input", (e) => {
         const val = parseFloat(e.target.value);
         applyVolume(val);
-        localStorage.setItem("flash_player_volume", val);
+        localStorage.setItem(volumeKey, val);
       });
 
       document.getElementById("kb-btn").onclick = () => kbModal.classList.add("open");
       document.getElementById("close-kb").onclick = () => { kbModal.classList.remove("open"); wrapper.focus(); };
       document.getElementById("mapper-btn").onclick = () => mapperModal.classList.add("open");
       document.getElementById("close-mapper").onclick = () => { mapperModal.classList.remove("open"); wrapper.focus(); };
+      
+      document.getElementById("info-btn").onclick = () => { updateGameInfo(); infoModal.classList.add("open"); };
+      document.getElementById("close-info").onclick = () => { infoModal.classList.remove("open"); wrapper.focus(); };
+      
+      document.getElementById("notes-btn").onclick = () => {
+        document.getElementById("notes-textarea").value = localStorage.getItem(notesKey) || "";
+        notesModal.classList.add("open");
+      };
+      document.getElementById("close-notes").onclick = () => { notesModal.classList.remove("open"); wrapper.focus(); };
+      document.getElementById("notes-save").onclick = () => {
+        const notes = document.getElementById("notes-textarea").value;
+        localStorage.setItem(notesKey, notes);
+        notesModal.classList.remove("open");
+        wrapper.focus();
+      };
+      document.getElementById("notes-clear").onclick = () => {
+        if (confirm("Clear notes for this game?")) {
+          document.getElementById("notes-textarea").value = "";
+          localStorage.removeItem(notesKey);
+        }
+      };
+
+      const zoomDisplay = document.getElementById("zoom-display");
+      const zoomOutBtn = document.getElementById("zoom-out-btn");
+      const zoomInBtn = document.getElementById("zoom-in-btn");
+
+      function updateZoomDisplay() {
+        zoomDisplay.textContent = Math.round(currentZoom * 100) + "%";
+        localStorage.setItem(zoomKey, currentZoom * 100);
+      }
+
+      function zoomAdjust(amount) {
+        currentZoom = Math.max(0.5, Math.min(3, currentZoom + amount));
+        updateContainerAspect();
+        updateZoomDisplay();
+      }
+
+      const savedZoom = localStorage.getItem(zoomKey);
+      if (savedZoom) {
+        currentZoom = Math.max(0.5, Math.min(3, parseInt(savedZoom) / 100));
+      }
+
+      zoomOutBtn.addEventListener("click", () => zoomAdjust(-0.1));
+      zoomInBtn.addEventListener("click", () => zoomAdjust(0.1));
+
+      // Keyboard zoom shortcuts
+      wrapper.addEventListener("keydown", (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          if (e.key === "+" || e.key === "=") {
+            e.preventDefault();
+            zoomAdjust(0.1);
+          } else if (e.key === "-" || e.key === "_") {
+            e.preventDefault();
+            zoomAdjust(-0.1);
+          } else if (e.key === "0") {
+            e.preventDefault();
+            currentZoom = 1.0;
+            updateContainerAspect();
+            updateZoomDisplay();
+          }
+        }
+      });
+
+      updateZoomDisplay();
 
       document.querySelectorAll(".bind-key").forEach(btn => {
         if (btn.id.startsWith("toggle-")) return;
