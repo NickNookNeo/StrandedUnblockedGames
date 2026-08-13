@@ -1,19 +1,19 @@
 [
   {
     "title": "Flash Classics!",
-    "url": "https://subg.strandedclone.space/Flash Classics/",
+    "url": "/Flash-Classics",
     "thumbnail": "flash.jpg",
     "tags": ["Flash", "Retro", "Games"]
   },
   {
     "title": "Super Mario 64",
-    "url": "https://subg.strandedclone.space/Mario64",
+    "url": "/Mario64",
     "thumbnail": "mario.jpg",
     "tags": ["3D", "Platformer", "Port"]
   },
   {
     "title": "Backrooms",
-    "url": "https://subg.strandedclone.space/Backrooms",
+    "url": "/Backrooms",
     "thumbnail": "backrooms.jpg",
     "tags": ["Horror", "Exploration", "Atmospheric"]
   }
