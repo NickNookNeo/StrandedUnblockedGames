@@ -22,5 +22,13 @@
     "tags": ["platformer", "puzzle", "educational"],
     "width": 550,
     "height": 400
+  },
+  {
+    "file": "fpadvent_1.swf",
+    "title": "Fancy Pants Adventure 1",
+    "thumbnail": "fancypants_adventure.jpg",
+    "tags": ["platformer", "exploration", "atmospheric"],
+    "width": 720,
+    "height": 480
   }
 ]

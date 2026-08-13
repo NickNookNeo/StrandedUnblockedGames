@@ -88,6 +88,7 @@
       width: 100%;
     }
 
+    /* Fixed Layout Wrapper that completely bypasses rigid flex box constraints */
     .player-wrapper {
       position: relative;
       width: 100%;
@@ -106,6 +107,7 @@
       align-items: center;
       justify-content: center;
       overflow: visible;
+      /* width/height set by JS to native SWF size, then CSS-scaled */
     }
 
     .screen-perspective {
@@ -149,6 +151,7 @@
       border-radius: inherit;
     }
 
+    /* Size is set by JS to native SWF pixels; do not force 100% */
     ruffle-player {
       display: block !important;
       overflow: hidden !important;
@@ -186,6 +189,7 @@
     body.fx-scanlines .retro-crt-overlay {
       display: block;
       background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%);
+      /* --scanline-size is set in JS to counter the CSS scale transform */
       background-size: 100% var(--scanline-size, 4px);
       animation: crt-roll 0.8s linear infinite, crt-flicker 0.15s infinite;
     }
@@ -209,6 +213,7 @@
       background: radial-gradient(circle at center, #1e293b 0%, #050811 100%) !important;
     }
 
+    /* Tiny strip at the very bottom — hard to hit by accident */
     .control-hover-trigger {
       position: absolute;
       bottom: 0;
@@ -389,6 +394,7 @@
     }
   </style>
 
+  <!-- Load Ruffle library -->
   <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
   <script>
     window.RufflePlayer = window.RufflePlayer || {};
@@ -397,7 +403,7 @@
       "letterbox": "on",
       "wmode": "window",
       "backgroundColor": "#000000",
-      "preferredRenderer": "canvas",
+      "quality": "high",
       "allowScriptAccess": true
     };
   </script>
@@ -421,7 +427,6 @@
     <div class="game-viewport" id="game-viewport">
       <div class="screen-perspective" id="screen-perspective">
         <div class="game-container" id="game-container">
-          <div class="flash-overlay" id="flash-overlay"></div>
           <div class="retro-crt-overlay"></div>
         </div>
       </div>
@@ -436,7 +441,6 @@
         <div class="control-group">
           <button class="control-btn" id="fx-modal-btn">Visual FX</button>
           <button class="control-btn" id="ambient-btn">Ambient</button>
-          <button class="control-btn" id="shot-btn">Screenshot</button>
           <button class="control-btn" id="theater-btn">Theater</button>
           <button class="control-btn" id="fs-btn">Fullscreen</button>
         </div>
@@ -444,6 +448,7 @@
     </div>
   </div>
 
+  <!-- FX Modal -->
   <div class="modal-overlay" id="fx-modal">
     <div class="modal-card">
       <div class="modal-header">
@@ -465,6 +470,7 @@
     </div>
   </div>
 
+  <!-- Keyboard Binds Modal -->
   <div class="modal-overlay" id="kb-modal">
     <div class="modal-card">
       <div class="modal-header">
@@ -482,6 +488,7 @@
     </div>
   </div>
 
+  <!-- Controller Binds Modal -->
   <div class="modal-overlay" id="mapper-modal">
     <div class="modal-card">
       <div class="modal-header">
@@ -501,6 +508,7 @@
       const urlParams = new URLSearchParams(window.location.search);
       const gameFile = urlParams.get("game") || "cactusmccoy.swf";
       const gameTitle = urlParams.get("title") || "Flash Game";
+      // Prefer explicit dimensions from games.json (fixes wrong/late Ruffle metadata)
       const paramW = parseInt(urlParams.get("w"), 10);
       const paramH = parseInt(urlParams.get("h"), 10);
       let forcedWidth = Number.isFinite(paramW) && paramW > 0 ? paramW : null;
@@ -518,10 +526,10 @@
       gameContainer.insertBefore(player, gameContainer.firstChild);
       player.load({
         url: `assets/${gameFile}`,
-        preferredRenderer: "canvas",
         scale: "showAll",
         letterbox: "on",
         backgroundColor: "#000000",
+        quality: "high",
         allowScriptAccess: true
       });
 
@@ -531,8 +539,6 @@
       const padStatus = document.getElementById("pad-status");
       const volumeSlider = document.getElementById("volume-slider");
       const ambientBtn = document.getElementById("ambient-btn");
-      const shotBtn = document.getElementById("shot-btn");
-      const flashOverlay = document.getElementById("flash-overlay");
 
       const savedVolume = localStorage.getItem("flash_player_volume");
       if (savedVolume !== null) {
@@ -554,11 +560,13 @@
         const swfWidth = forcedWidth || player.metadata?.width || 550;
         const swfHeight = forcedHeight || player.metadata?.height || 400;
 
+        // Keep Ruffle at native SWF resolution (preserves masks / HUD layout)
         player.style.width = swfWidth + "px";
         player.style.height = swfHeight + "px";
         player.style.maxWidth = swfWidth + "px";
         player.style.maxHeight = swfHeight + "px";
 
+        // Scale the whole viewport (game + control bar) to fit available space
         const scale = Math.min(wrapperWidth / swfWidth, wrapperHeight / swfHeight);
         gameViewport.style.width = swfWidth + "px";
         gameViewport.style.height = swfHeight + "px";
@@ -618,102 +626,6 @@
 
       ambientBtn.addEventListener("click", () => {
         document.body.classList.toggle("ambient-mode");
-      });
-
-      shotBtn.addEventListener("click", async () => {
-        function findCanvas(root) {
-          if (!root) return null;
-          if (root.querySelector) {
-            const c = root.querySelector("canvas");
-            if (c) return c;
-          }
-          const kids = root.querySelectorAll ? root.querySelectorAll("*") : [];
-          for (const el of kids) {
-            if (el.shadowRoot) {
-              const found = findCanvas(el.shadowRoot);
-              if (found) return found;
-            }
-          }
-          return null;
-        }
-
-        let canvas = null;
-        try {
-          if (player.shadowRoot) canvas = findCanvas(player.shadowRoot);
-          if (!canvas) canvas = findCanvas(player);
-          if (!canvas) canvas = document.querySelector("ruffle-player canvas");
-        } catch (e) {
-          console.error("Canvas search failed:", e);
-        }
-
-        if (!canvas) {
-          alert("Screenshot failed: no canvas found. Is the game loaded?");
-          return;
-        }
-
-        console.log("Screenshot canvas:", canvas.width, "x", canvas.height, canvas);
-
-        flashOverlay.classList.add("active");
-        setTimeout(() => flashOverlay.classList.remove("active"), 250);
-
-        const filename = (gameTitle || "flash_game").replace(/[^a-z0-9]+/gi, "_").toLowerCase() + "_snapshot.png";
-
-        function downloadBlob(blob) {
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.download = filename;
-          link.href = url;
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          setTimeout(() => URL.revokeObjectURL(url), 2000);
-        }
-
-        try {
-          const w = canvas.width || 1;
-          const h = canvas.height || 1;
-          const out = document.createElement("canvas");
-          out.width = w;
-          out.height = h;
-          const ctx = out.getContext("2d");
-          ctx.drawImage(canvas, 0, 0, w, h);
-
-          if (out.toBlob) {
-            out.toBlob((blob) => {
-              if (!blob) {
-                alert("Screenshot failed: empty image.");
-                return;
-              }
-              downloadBlob(blob);
-            }, "image/png");
-          } else {
-            const dataUrl = out.toDataURL("image/png");
-            const link = document.createElement("a");
-            link.download = filename;
-            link.href = dataUrl;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-          }
-        } catch (err) {
-          console.error("Screenshot error:", err);
-          try {
-            const dataUrl = canvas.toDataURL("image/png");
-            if (!dataUrl || dataUrl === "data:," || dataUrl.length < 100) {
-              alert("Screenshot is blank. Hard-refresh so preferredRenderer=canvas takes effect.");
-              return;
-            }
-            const link = document.createElement("a");
-            link.download = filename;
-            link.href = dataUrl;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-          } catch (err2) {
-            console.error("Fallback failed:", err2);
-            alert("Screenshot failed: " + (err2.message || err2));
-          }
-        }
       });
 
       const defaultKeyMap = {
