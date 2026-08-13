@@ -28,6 +28,7 @@
       background-attachment: fixed;
       color: var(--text-color);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      scroll-behavior: smooth;
     }
 
     body {
@@ -72,11 +73,17 @@
       margin-bottom: 1rem;
       justify-content: center;
       flex-wrap: wrap;
+      position: relative;
+    }
+
+    .search-wrapper {
+      flex: 1;
+      min-width: 250px;
+      position: relative;
     }
 
     #search-input {
-      flex: 1;
-      min-width: 250px;
+      width: 100%;
       padding: 0.75rem 1rem;
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -90,6 +97,40 @@
     #search-input:focus {
       border-color: var(--accent-color);
       box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+    }
+
+    .autocomplete-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      z-index: 100;
+      display: none;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .autocomplete-item {
+      padding: 0.6rem 1rem;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      cursor: pointer;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .autocomplete-item:last-child {
+      border-bottom: none;
+    }
+
+    .autocomplete-item:hover {
+      background: var(--card-hover);
+      color: var(--accent-color);
     }
 
     .nav-tabs {
@@ -277,6 +318,39 @@
       font-size: 1.1rem;
       padding: 3rem 0;
     }
+
+    /* Scroll to Top Button */
+    .scroll-top-btn {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--accent-color);
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.2s;
+      z-index: 99;
+    }
+
+    .scroll-top-btn.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .scroll-top-btn:hover {
+      background-color: var(--card-hover);
+      transform: translateY(-3px);
+    }
   </style>
 </head>
 <body>
@@ -286,7 +360,10 @@
     <p class="subtitle">Select a game below to start playing</p>
     
     <div class="controls-row">
-      <input type="text" id="search-input" placeholder="Search games..." autocomplete="off">
+      <div class="search-wrapper">
+        <input type="text" id="search-input" placeholder="Search games..." autocomplete="off">
+        <div class="autocomplete-dropdown" id="autocomplete-dropdown"></div>
+      </div>
       <button class="random-btn" id="random-btn" title="Pick a random game">🎲 Random</button>
       <div class="nav-tabs">
         <button class="tab-btn active" data-tab="all">All</button>
@@ -309,14 +386,19 @@
     <div class="loading-text">Loading games library...</div>
   </div>
 
+  <!-- Scroll to Top Button -->
+  <button class="scroll-top-btn" id="scroll-top-btn" title="Scroll to top">↑</button>
+
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const gridContainer = document.getElementById("game-grid");
       const recentGrid = document.getElementById("recent-grid");
       const recentSection = document.getElementById("recent-section");
       const searchInput = document.getElementById("search-input");
+      const autocompleteDropdown = document.getElementById("autocomplete-dropdown");
       const tagsContainer = document.getElementById("tags-container");
       const randomBtn = document.getElementById("random-btn");
+      const scrollTopBtn = document.getElementById("scroll-top-btn");
       
       let allGames = [];
       let currentFilterTab = "all";
@@ -407,9 +489,40 @@
         });
       }
 
+      function updateAutocomplete(query) {
+        if (!query) {
+          autocompleteDropdown.style.display = "none";
+          autocompleteDropdown.innerHTML = "";
+          return;
+        }
+
+        const matches = allGames.filter(g => g.title.toLowerCase().includes(query)).slice(0, 5);
+        if (matches.length === 0) {
+          autocompleteDropdown.style.display = "none";
+          autocompleteDropdown.innerHTML = "";
+          return;
+        }
+
+        autocompleteDropdown.innerHTML = "";
+        matches.forEach(game => {
+          const item = document.createElement("div");
+          item.className = "autocomplete-item";
+          item.textContent = game.title;
+          item.addEventListener("click", () => {
+            searchInput.value = game.title;
+            autocompleteDropdown.style.display = "none";
+            applyFilters();
+          });
+          autocompleteDropdown.appendChild(item);
+        });
+        autocompleteDropdown.style.display = "block";
+      }
+
       function applyFilters() {
         const query = searchInput.value.toLowerCase().trim();
         const favs = getFavorites();
+
+        updateAutocomplete(query);
 
         let filtered = allGames.filter(game => {
           if (currentFilterTab === "favs" && !favs.includes(game.file)) return false;
@@ -433,7 +546,6 @@
         const query = searchInput.value.toLowerCase().trim();
         const favs = getFavorites();
 
-        // Pick from currently filtered games if filters are active, otherwise from all games
         let pool = allGames.filter(game => {
           if (currentFilterTab === "favs" && !favs.includes(game.file)) return false;
           if (currentTag !== "all" && (!(game.tags || []).includes(currentTag))) return false;
@@ -464,6 +576,26 @@
         });
 
       searchInput.addEventListener("input", applyFilters);
+
+      // Hide autocomplete when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".search-wrapper")) {
+          autocompleteDropdown.style.display = "none";
+        }
+      });
+
+      // Scroll to top visibility and action
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 300) {
+          scrollTopBtn.classList.add("visible");
+        } else {
+          scrollTopBtn.classList.remove("visible");
+        }
+      });
+
+      scrollTopBtn.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
 
       document.querySelectorAll(".tab-btn").forEach(btn => {
         btn.addEventListener("click", (e) => {

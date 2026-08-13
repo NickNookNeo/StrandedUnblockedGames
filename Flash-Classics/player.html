@@ -100,7 +100,6 @@
       min-height: 0;
     }
 
-    /* Game Viewport precisely bounds the game content and scaling */
     .game-viewport {
       position: relative;
       display: flex;
@@ -109,7 +108,6 @@
       overflow: hidden !important;
     }
 
-    /* Screen perspective holder (handles CRT tilt & curvature bezel without breaking internal UI) */
     .screen-perspective {
       position: relative;
       display: flex;
@@ -167,7 +165,6 @@
       object-fit: contain !important;
     }
 
-    /* Dynamic Live CRT Overlays (Restricted precisely to the screen canvas area) */
     .retro-crt-overlay {
       position: absolute;
       inset: 0;
@@ -223,7 +220,6 @@
       filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4));
     }
 
-    /* Strict Fullscreen Consistency */
     :fullscreen {
       width: 100vw !important;
       height: 100vh !important;
@@ -563,6 +559,25 @@
       const shotBtn = document.getElementById("shot-btn");
       const flashOverlay = document.getElementById("flash-overlay");
 
+      // Load persistent volume memory if saved
+      const savedVolume = localStorage.getItem("flash_player_volume");
+      if (savedVolume !== null) {
+        volumeSlider.value = savedVolume;
+      }
+
+      // Apply volume helper
+      function applyVolume(val) {
+        if (player) {
+          if (player.setVolume) player.setVolume(val); 
+          else player.volume = val;
+        }
+      }
+
+      player.addEventListener("loadedmetadata", () => {
+        updateContainerAspect();
+        applyVolume(parseFloat(volumeSlider.value));
+      });
+
       let activeListeningBtn = null;
       let listeningType = null;
       let isPaused = false;
@@ -598,7 +613,6 @@
       setTimeout(updateContainerAspect, 100);
       setTimeout(updateContainerAspect, 500);
       setTimeout(updateContainerAspect, 1000);
-      player.addEventListener("loadedmetadata", updateContainerAspect);
 
       document.getElementById("fx-modal-btn").onclick = () => fxModal.classList.add("open");
       document.getElementById("close-fx").onclick = () => { fxModal.classList.remove("open"); wrapper.focus(); };
@@ -685,10 +699,9 @@
       });
 
       volumeSlider.addEventListener("input", (e) => {
-        if (player) {
-          const val = parseFloat(e.target.value);
-          if (player.setVolume) player.setVolume(val); else player.volume = val;
-        }
+        const val = parseFloat(e.target.value);
+        applyVolume(val);
+        localStorage.setItem("flash_player_volume", val);
       });
 
       document.getElementById("kb-btn").onclick = () => kbModal.classList.add("open");
