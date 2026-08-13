@@ -100,6 +100,15 @@
       min-height: 0;
     }
 
+    /* Game Viewport precisely bounds the game content and scaling */
+    .game-viewport {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden !important;
+    }
+
     /* Screen perspective holder (handles CRT tilt & curvature bezel without breaking internal UI) */
     .screen-perspective {
       position: relative;
@@ -120,6 +129,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 100%;
+      height: 100%;
       overflow: hidden !important;
       background: transparent !important;
       border-radius: 6px;
@@ -442,28 +453,30 @@
   </div>
 
   <div class="player-wrapper" id="player-wrapper" tabindex="0">
-    <div class="screen-perspective" id="screen-perspective">
-      <div class="game-container" id="game-container">
-        <div class="flash-overlay" id="flash-overlay"></div>
-        <div class="retro-crt-overlay"></div>
-        
-        <!-- Ruffle player is inserted here, keeping it safely isolated from control bars -->
+    <div class="game-viewport" id="game-viewport">
+      <div class="screen-perspective" id="screen-perspective">
+        <div class="game-container" id="game-container">
+          <div class="flash-overlay" id="flash-overlay"></div>
+          <div class="retro-crt-overlay"></div>
+          
+          <!-- Ruffle player is inserted here -->
+        </div>
       </div>
-    </div>
 
-    <div class="control-hover-trigger"></div>
-    <div class="control-bar" id="control-bar">
-      <div class="control-group">
-        <button class="control-btn" id="play-pause-btn">Pause</button>
-        <button class="control-btn" id="reload-btn">Restart</button>
-        <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.05" value="1" title="Volume">
-      </div>
-      <div class="control-group">
-        <button class="control-btn" id="fx-modal-btn">Visual FX</button>
-        <button class="control-btn" id="ambient-btn">Ambient</button>
-        <button class="control-btn" id="shot-btn">Screenshot</button>
-        <button class="control-btn" id="theater-btn">Theater</button>
-        <button class="control-btn" id="fs-btn">Fullscreen</button>
+      <div class="control-hover-trigger"></div>
+      <div class="control-bar" id="control-bar">
+        <div class="control-group">
+          <button class="control-btn" id="play-pause-btn">Pause</button>
+          <button class="control-btn" id="reload-btn">Restart</button>
+          <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.05" value="1" title="Volume">
+        </div>
+        <div class="control-group">
+          <button class="control-btn" id="fx-modal-btn">Visual FX</button>
+          <button class="control-btn" id="ambient-btn">Ambient</button>
+          <button class="control-btn" id="shot-btn">Screenshot</button>
+          <button class="control-btn" id="theater-btn">Theater</button>
+          <button class="control-btn" id="fs-btn">Fullscreen</button>
+        </div>
       </div>
     </div>
   </div>
@@ -533,6 +546,7 @@
       document.title = `${gameTitle} - Flash Player`;
 
       const gameContainer = document.getElementById("game-container");
+      const gameViewport = document.getElementById("game-viewport");
       const wrapper = document.getElementById("player-wrapper");
       
       const ruffle = window.RufflePlayer.newest();
@@ -567,11 +581,11 @@
         const wrapperRatio = wrapperWidth / wrapperHeight;
 
         if (wrapperRatio > targetRatio) {
-          gameContainer.style.height = `${wrapperHeight}px`;
-          gameContainer.style.width = `${wrapperHeight * targetRatio}px`;
+          gameViewport.style.height = `${wrapperHeight}px`;
+          gameViewport.style.width = `${wrapperHeight * targetRatio}px`;
         } else {
-          gameContainer.style.width = `${wrapperWidth}px`;
-          gameContainer.style.height = `${wrapperWidth / targetRatio}px`;
+          gameViewport.style.width = `${wrapperWidth}px`;
+          gameViewport.style.height = `${wrapperWidth / targetRatio}px`;
         }
       }
 

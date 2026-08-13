@@ -68,7 +68,7 @@
       display: flex;
       gap: 1rem;
       width: 100%;
-      max-width: 600px;
+      max-width: 700px;
       margin-bottom: 1rem;
       justify-content: center;
       flex-wrap: wrap;
@@ -97,7 +97,7 @@
       gap: 0.5rem;
     }
 
-    .tab-btn {
+    .tab-btn, .random-btn {
       padding: 0.75rem 1rem;
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -106,10 +106,10 @@
       cursor: pointer;
       font-weight: 600;
       font-size: 0.9rem;
-      transition: background-color 0.2s, border-color 0.2s;
+      transition: background-color 0.2s, border-color 0.2s, color 0.2s;
     }
 
-    .tab-btn.active, .tab-btn:hover {
+    .tab-btn.active, .tab-btn:hover, .random-btn:hover {
       background-color: var(--card-hover);
       border-color: var(--accent-color);
       color: var(--accent-color);
@@ -124,6 +124,7 @@
     }
 
     .tag-pill {
+      flex: 0 0 auto;
       padding: 0.35rem 0.8rem;
       background-color: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border-color);
@@ -138,9 +139,16 @@
       align-items: center;
       justify-content: center;
       white-space: nowrap;
+      font-weight: 400;
     }
 
-    .tag-pill.active, .tag-pill:hover {
+    .tag-pill:hover {
+      background-color: var(--card-hover);
+      color: var(--text-color);
+      border-color: var(--accent-color);
+    }
+
+    .tag-pill.active {
       background-color: var(--accent-color);
       color: #050811;
       border-color: var(--accent-color);
@@ -279,6 +287,7 @@
     
     <div class="controls-row">
       <input type="text" id="search-input" placeholder="Search games..." autocomplete="off">
+      <button class="random-btn" id="random-btn" title="Pick a random game">🎲 Random</button>
       <div class="nav-tabs">
         <button class="tab-btn active" data-tab="all">All</button>
         <button class="tab-btn" data-tab="favs">Favorites</button>
@@ -307,6 +316,7 @@
       const recentSection = document.getElementById("recent-section");
       const searchInput = document.getElementById("search-input");
       const tagsContainer = document.getElementById("tags-container");
+      const randomBtn = document.getElementById("random-btn");
       
       let allGames = [];
       let currentFilterTab = "all";
@@ -417,6 +427,26 @@
 
         renderRecent();
       }
+
+      randomBtn.addEventListener("click", () => {
+        if (allGames.length === 0) return;
+        const query = searchInput.value.toLowerCase().trim();
+        const favs = getFavorites();
+
+        // Pick from currently filtered games if filters are active, otherwise from all games
+        let pool = allGames.filter(game => {
+          if (currentFilterTab === "favs" && !favs.includes(game.file)) return false;
+          if (currentTag !== "all" && (!(game.tags || []).includes(currentTag))) return false;
+          if (query && !game.title.toLowerCase().includes(query)) return false;
+          return true;
+        });
+
+        if (pool.length === 0) pool = allGames;
+
+        const randomGame = pool[Math.floor(Math.random() * pool.length)];
+        addToHistory(randomGame);
+        window.location.href = `player.html?game=${encodeURIComponent(randomGame.file)}&title=${encodeURIComponent(randomGame.title)}`;
+      });
 
       fetch("games.json")
         .then(response => {
