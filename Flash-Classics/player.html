@@ -15,80 +15,187 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: radial-gradient(circle at center, #1e293b 0%, #050811 100%) !important;
+      background: radial-gradient(circle at center, #0f172a 0%, #020617 100%) !important;
       background-attachment: fixed !important;
-      color: #f8fafc;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #f1f5f9;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       user-select: none;
       -webkit-user-select: none;
+      -webkit-font-smoothing: antialiased;
     }
 
     body {
-      padding: 8px 12px;
+      padding: 1rem 1.25rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      gap: 6px;
+      gap: 0.75rem;
+      transition: background 0.4s ease;
     }
 
-    .header-container {
-      width: 100%;
+    /* Page Loading / Transition Overlay */
+    .page-loader {
+      position: fixed;
+      inset: 0;
+      background: #020617;
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      flex-shrink: 0;
-      z-index: 60;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      z-index: 999999;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
-    .header-top {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      width: 100%;
+    .page-loader.fade-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(56, 189, 248, 0.15);
+      border-top-color: #38bdf8;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .loader-text {
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: #7dd3fc;
+      text-transform: uppercase;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Fixed top-left docked Games List button */
+    .fixed-back-container {
+      position: fixed;
+      top: 1rem;
+      left: 1.25rem;
+      z-index: 150;
     }
 
     .back-btn {
-      color: #f8fafc;
+      color: #f1f5f9;
       text-decoration: none;
-      background-color: rgba(30, 41, 59, 0.9);
-      backdrop-filter: blur(8px);
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 0.75rem;
+      background-color: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 0.5rem 1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
       font-weight: 600;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: background-color 0.2s, color 0.2s;
-      justify-self: start;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      cursor: pointer;
+      display: inline-block;
     }
 
     .back-btn:hover {
       background-color: #334155;
       color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .back-btn:active {
+      transform: scale(0.90);
+      background-color: #0ea5e9;
+      color: #020617;
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    }
+
+    .header-container {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      flex-shrink: 0;
+      z-index: 60;
+      transition: opacity 0.3s ease, transform 0.3s ease, max-height 0.3s ease, margin 0.3s ease;
+      opacity: 1;
+      max-height: 150px;
+      margin-top: 2.2rem;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      position: relative;
     }
 
     h1.game-title {
-      grid-column: 2;
       text-align: center;
-      font-size: 1rem;
+      font-size: 1.25rem;
       font-weight: 800;
       margin: 0;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      background: linear-gradient(135deg, #ffffff 0%, #38bdf8 100%);
+      letter-spacing: 1.5px;
+      background: linear-gradient(135deg, #ffffff 30%, #7dd3fc 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       pointer-events: none;
+      filter: drop-shadow(0 2px 8px rgba(56, 189, 248, 0.2));
     }
 
     .header-controls {
       display: flex;
       justify-content: center;
-      gap: 6px;
+      gap: 0.5rem;
       width: 100%;
+      flex-wrap: wrap;
     }
 
-    /* Fixed Layout Wrapper that completely bypasses rigid flex box constraints */
+    .header-controls .control-btn {
+      flex: 0 0 auto;
+      padding: 0.4rem 1rem;
+      background: linear-gradient(135deg, rgba(51, 65, 85, 0.9) 0%, rgba(30, 41, 59, 0.95) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      color: #f1f5f9;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-sizing: border-box;
+      height: 33px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    .header-controls .control-btn:hover {
+      background: linear-gradient(135deg, rgba(71, 85, 105, 0.95) 0%, rgba(51, 65, 85, 1) 100%);
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .header-controls .control-btn:active {
+      transform: scale(0.95) translateY(0);
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      color: #020617;
+      border-color: #38bdf8;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    }
+
     .player-wrapper {
       position: relative;
       width: 100%;
@@ -99,6 +206,7 @@
       overflow: hidden;
       outline: none;
       min-height: 0;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .game-viewport {
@@ -107,9 +215,9 @@
       align-items: center;
       justify-content: center;
       overflow: visible;
-      /* width/height set by JS to native SWF size; transform-scaled to fit screen */
       flex-shrink: 0;
       z-index: 50;
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .screen-perspective {
@@ -135,12 +243,14 @@
       height: 100%;
       overflow: hidden;
       background: #000 !important;
-      border-radius: 6px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border-radius: 14px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: border-radius 0.3s ease, box-shadow 0.3s ease;
     }
 
     body.fx-curvature .game-container {
-      border-radius: 20px;
+      border-radius: 24px;
     }
 
     body.fx-curvature .game-container::before {
@@ -153,7 +263,6 @@
       border-radius: inherit;
     }
 
-    /* Size is set by JS to native SWF pixels; do not force 100% */
     ruffle-player {
       display: block !important;
       overflow: hidden !important;
@@ -191,37 +300,35 @@
     body.fx-scanlines .retro-crt-overlay {
       display: block;
       background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%);
-      /* --scanline-size is set in JS to counter the CSS scale transform */
       background-size: 100% var(--scanline-size, 4px);
       animation: crt-roll 0.8s linear infinite, crt-flicker 0.15s infinite;
     }
 
     body.fx-glow .game-container {
-      filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4));
+      filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.35));
     }
 
     :fullscreen {
       width: 100vw !important;
       height: 100vh !important;
-      background: radial-gradient(circle at center, #1e293b 0%, #050811 100%) !important;
+      background: radial-gradient(circle at center, #0f172a 0%, #020617 100%) !important;
       display: flex !important;
       flex-direction: column !important;
       align-items: center !important;
       justify-content: space-between !important;
-      padding: 8px 12px !important;
+      padding: 1rem 1.25rem !important;
     }
 
     ::backdrop {
-      background: radial-gradient(circle at center, #1e293b 0%, #050811 100%) !important;
+      background: radial-gradient(circle at center, #0f172a 0%, #020617 100%) !important;
     }
 
-    /* Tiny strip at the very bottom — hard to hit by accident */
     .control-hover-trigger {
       position: fixed;
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 8px;
+      height: 12px;
       z-index: 120;
       cursor: pointer;
     }
@@ -234,14 +341,16 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(12px);
-      padding: 4px 8px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 0.6rem 1.25rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
       transform: translateY(100%);
-      transition: transform 0.2s ease-in-out;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 130;
-      font-size: 0.65rem;
+      font-size: 0.8rem;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
     }
 
     .control-hover-trigger:hover ~ .control-bar,
@@ -252,69 +361,162 @@
     .control-group {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 0.5rem;
+      flex-wrap: wrap;
     }
 
-    .control-btn {
-      padding: 3px 8px;
-      background-color: rgba(255, 255, 255, 0.05);
-      color: #f8fafc;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 6px;
+    .control-bar .control-btn {
+      padding: 0.45rem 0.85rem;
+      background-color: rgba(30, 41, 59, 0.85);
+      color: #f1f5f9;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 0.7rem;
+      font-size: 0.8rem;
       font-weight: 600;
-      transition: background-color 0.2s, color 0.2s;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
-    .control-btn:hover {
+    #play-pause-btn {
+      min-width: 75px;
+      text-align: center;
+    }
+
+    .control-bar .control-btn:hover {
       background-color: #334155;
       color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.3);
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.15);
+    }
+
+    .control-bar .control-btn:active {
+      transform: scale(0.90);
+      background-color: #0ea5e9;
+      color: #020617;
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
     }
 
     .volume-slider {
-      width: 60px;
+      width: 75px;
       cursor: pointer;
       accent-color: #38bdf8;
+    }
+
+    /* Larger, circular virtual touch control layout overlay */
+    .virtual-touch-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 95;
+      display: none;
+    }
+
+    body.mobile-controls-active .virtual-touch-overlay {
+      display: block;
+    }
+
+    .v-pad {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      width: 170px;
+      height: 170px;
+      pointer-events: auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .v-btn {
+      background: rgba(30, 41, 59, 0.7);
+      border: 2px solid rgba(56, 189, 248, 0.4);
+      color: #7dd3fc;
+      border-radius: 50%;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: background 0.1s ease, transform 0.1s ease;
+    }
+
+    .v-btn:active, .v-btn.touched {
+      background: rgba(14, 165, 233, 0.9);
+      color: #020617;
+      transform: scale(0.93);
+    }
+
+    .v-actions {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .v-action-btn {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: rgba(30, 41, 59, 0.7);
+      border: 2px solid rgba(56, 189, 248, 0.4);
+      color: #7dd3fc;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: background 0.1s ease, transform 0.1s ease;
+    }
+
+    .v-action-btn:active, .v-action-btn.touched {
+      background: rgba(14, 165, 233, 0.9);
+      color: #020617;
+      transform: scale(0.93);
     }
 
     body.ambient-mode {
       background: radial-gradient(circle at center, #070a12 0%, #000000 70%) !important;
     }
     body.ambient-mode .header-container,
-    body.ambient-mode .control-bar {
-      opacity: 0.2;
+    body.ambient-mode .control-bar,
+    body.ambient-mode .fixed-back-container {
+      opacity: 0.15;
+      transition: opacity 0.3s ease;
     }
     body.ambient-mode .header-container:hover,
-    body.ambient-mode .control-bar:hover {
+    body.ambient-mode .control-bar:hover,
+    body.ambient-mode .fixed-back-container:hover {
       opacity: 1;
-    }
-
-    .flash-overlay {
-      position: absolute;
-      inset: 0;
-      background: white;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 140;
-      transition: opacity 0.3s ease-out;
-    }
-    .flash-overlay.active {
-      opacity: 0.7;
     }
 
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(5, 8, 17, 0.85);
-      backdrop-filter: blur(8px);
+      background: rgba(2, 6, 23, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 99999;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.25s ease;
     }
 
     .modal-overlay.open {
@@ -324,15 +526,15 @@
 
     .modal-card {
       background: #0f172a;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 16px;
       width: 90%;
-      max-width: 500px;
-      padding: 1rem;
+      max-width: 480px;
+      padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.9);
+      gap: 1rem;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(56, 189, 248, 0.1);
       max-height: 85vh;
       overflow-y: auto;
     }
@@ -341,59 +543,164 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding-bottom: 0.4rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 0.75rem;
     }
 
     .modal-header h3 {
       margin: 0;
-      color: #38bdf8;
-      font-size: 0.95rem;
+      color: #7dd3fc;
+      font-size: 1.15rem;
+      font-weight: 700;
     }
 
     .close-modal-btn {
-      background: transparent;
-      border: none;
-      color: #f8fafc;
-      font-size: 1.2rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #f1f5f9;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .close-modal-btn:hover {
+      background: #334155;
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .close-modal-btn:active {
+      transform: scale(0.90);
+      background-color: #0ea5e9;
+      color: #020617;
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
     }
 
     .bind-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 6px 10px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 6px;
-      font-size: 0.8rem;
+      padding: 0.75rem 1rem;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
     }
 
     .bind-key {
-      padding: 4px 10px;
-      background: rgba(30, 41, 59, 0.9);
-      border: 1px solid #38bdf8;
+      padding: 0.4rem 0.9rem;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(56, 189, 248, 0.4);
       color: #38bdf8;
-      border-radius: 4px;
+      border-radius: 6px;
       font-family: monospace;
-      font-size: 0.75rem;
+      font-size: 0.85rem;
       cursor: pointer;
       min-width: 100px;
       text-align: center;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .bind-key:hover {
+      background: #334155;
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    }
+
+    .bind-key:active {
+      transform: scale(0.90);
+      background-color: #0ea5e9;
+      color: #020617;
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
     }
 
     .bind-key.listening {
-      background: #38bdf8;
-      color: #000;
+      background: #38bdf8 !important;
+      color: #020617 !important;
+      font-weight: 700 !important;
+      border-color: #38bdf8 !important;
     }
 
-    body.theater-mode .header-container { display: none !important; }
+    /* Dropdown selection styling for touch layout configuration */
+    .bind-select {
+      padding: 0.4rem 0.6rem;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      cursor: pointer;
+      min-width: 120px;
+      text-align: left;
+      outline: none;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .bind-select:hover {
+      background: #334155;
+      border-color: #38bdf8;
+    }
+
+    .bind-select:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      body {
+        padding: 0.5rem;
+      }
+      .header-container {
+        margin-top: 2.8rem;
+        max-height: 200px;
+      }
+      .header-controls {
+        gap: 0.35rem;
+      }
+      .header-controls .control-btn {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+        height: 28px;
+      }
+      .control-bar {
+        padding: 0.4rem 0.5rem;
+        font-size: 0.7rem;
+      }
+      .control-bar .control-btn {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.7rem;
+      }
+    }
+
+    /* Smooth Theater Mode transition styles */
+    body.theater-mode .header-container,
+    body.theater-mode .fixed-back-container {
+      opacity: 0;
+      max-height: 0;
+      margin: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
     body.theater-mode .player-wrapper {
       max-width: 100vw !important;
       width: 100vw !important;
       height: 100vh !important;
       margin: 0 !important;
+    }
+    body.theater-mode .game-container {
+      border-radius: 0 !important;
+      border: none !important;
     }
   </style>
 
@@ -413,16 +720,26 @@
 </head>
 <body>
 
+  <!-- Page Loading Overlay -->
+  <div class="page-loader" id="page-loader">
+    <div class="spinner"></div>
+    <div class="loader-text" id="loader-text">Loading Player...</div>
+  </div>
+
+  <!-- Fixed Top-Left Docked Back Button -->
+  <div class="fixed-back-container">
+    <a href="index.html" class="back-btn" id="transition-back">&larr; Games List</a>
+  </div>
+
   <div class="header-container">
     <div class="header-top">
-      <a href="index.html" class="back-btn">&larr; Games List</a>
       <h1 class="game-title" id="display-title">Loading...</h1>
-      <div style="width: 70px; visibility: hidden;"></div>
     </div>
     
     <div class="header-controls">
       <button class="control-btn" id="kb-btn">Keyboard Binds</button>
       <button class="control-btn" id="mapper-btn">Controller Binds</button>
+      <button class="control-btn" id="mobile-modal-btn">Mobile Controls</button>
       <button class="control-btn" id="info-btn">Game Info</button>
       <button class="control-btn" id="notes-btn">Notes</button>
     </div>
@@ -433,23 +750,42 @@
       <div class="screen-perspective" id="screen-perspective">
         <div class="game-container" id="game-container">
           <div class="retro-crt-overlay"></div>
+          <!-- Optional Touch Controls Overlay -->
+          <div class="virtual-touch-overlay" id="touch-overlay">
+            <div class="v-pad">
+              <div></div>
+              <div class="v-btn" id="vb-ArrowUp" data-action="ArrowUp">▲</div>
+              <div></div>
+              <div class="v-btn" id="vb-ArrowLeft" data-action="ArrowLeft">◀</div>
+              <div></div>
+              <div class="v-btn" id="vb-ArrowRight" data-action="ArrowRight">▶</div>
+              <div></div>
+              <div class="v-btn" id="vb-ArrowDown" data-action="ArrowDown">▼</div>
+              <div></div>
+            </div>
+            <div class="v-actions">
+              <div class="v-action-btn" id="vb-Space" data-action="Space">SPC</div>
+              <div class="v-action-btn" id="vb-KeyA" data-action="KeyA">A</div>
+              <div class="v-action-btn" id="vb-KeyS" data-action="KeyS">S</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Control Bar (outside game-viewport so it stays at full screen resolution) -->
+  <!-- Control Bar -->
   <div class="control-hover-trigger"></div>
   <div class="control-bar" id="control-bar">
     <div class="control-group">
       <button class="control-btn" id="play-pause-btn">Pause</button>
       <button class="control-btn" id="reload-btn">Restart</button>
       <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.05" value="1" title="Volume">
-      <span id="playtime-display" style="font-size: 0.65rem; color: #94a3b8; min-width: 45px; text-align: center;">0:00</span>
+      <span id="playtime-display" style="font-size: 0.75rem; color: #94a3b8; min-width: 45px; text-align: center; font-weight: 500;">0:00</span>
     </div>
     <div class="control-group">
       <button class="control-btn" id="zoom-out-btn" title="Zoom Out">−</button>
-      <span id="zoom-display" style="font-size: 0.65rem; color: #94a3b8; min-width: 35px; text-align: center;">100%</span>
+      <span id="zoom-display" style="font-size: 0.75rem; color: #94a3b8; min-width: 40px; text-align: center; font-weight: 500;">100%</span>
       <button class="control-btn" id="zoom-in-btn" title="Zoom In">+</button>
     </div>
     <div class="control-group">
@@ -469,16 +805,38 @@
       </div>
       <div class="bind-row">
         <span>CRT Scanlines Effect</span>
-        <button class="bind-key" id="toggle-scanlines" style="background: rgba(30,41,59,0.9);">Disabled</button>
+        <button class="bind-key" id="toggle-scanlines">Disabled</button>
       </div>
       <div class="bind-row">
         <span>CRT Curved Screen Bezel</span>
-        <button class="bind-key" id="toggle-curvature" style="background: rgba(30,41,59,0.9);">Disabled</button>
+        <button class="bind-key" id="toggle-curvature">Disabled</button>
       </div>
       <div class="bind-row">
         <span>Phosphor Glow Filter</span>
-        <button class="bind-key" id="toggle-glow" style="background: rgba(30,41,59,0.9);">Disabled</button>
+        <button class="bind-key" id="toggle-glow">Disabled</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Mobile Controls Modal -->
+  <div class="modal-overlay" id="mobile-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Mobile Touch Controls</h3>
+        <button class="close-modal-btn" id="close-mobile">&times;</button>
+      </div>
+      <div class="bind-row">
+        <span>Touch Overlay State</span>
+        <button class="bind-key" id="mobile-toggle-btn">Disabled</button>
+      </div>
+      <p style="font-size: 0.85rem; color: #38bdf8; margin: 0.5rem 0 0 0; font-weight: 600;">Assign Keyboard Key to Touch Button:</p>
+      <div class="bind-row"><span>D-Pad Up</span><select class="bind-select touch-bind-dropdown" data-touch-action="ArrowUp" id="sel-ArrowUp"></select></div>
+      <div class="bind-row"><span>D-Pad Down</span><select class="bind-select touch-bind-dropdown" data-touch-action="ArrowDown" id="sel-ArrowDown"></select></div>
+      <div class="bind-row"><span>D-Pad Left</span><select class="bind-select touch-bind-dropdown" data-touch-action="ArrowLeft" id="sel-ArrowLeft"></select></div>
+      <div class="bind-row"><span>D-Pad Right</span><select class="bind-select touch-bind-dropdown" data-touch-action="ArrowRight" id="sel-ArrowRight"></select></div>
+      <div class="bind-row"><span>Action SPC</span><select class="bind-select touch-bind-dropdown" data-touch-action="Space" id="sel-Space"></select></div>
+      <div class="bind-row"><span>Action A</span><select class="bind-select touch-bind-dropdown" data-touch-action="KeyA" id="sel-KeyA"></select></div>
+      <div class="bind-row"><span>Action S</span><select class="bind-select touch-bind-dropdown" data-touch-action="KeyS" id="sel-KeyS"></select></div>
     </div>
   </div>
 
@@ -507,7 +865,7 @@
         <h3>Controller Binds</h3>
         <button class="close-modal-btn" id="close-mapper">&times;</button>
       </div>
-      <p style="font-size: 0.75rem; color: #38bdf8; margin: 0;" id="pad-status">Searching for controller...</p>
+      <p style="font-size: 0.85rem; color: #38bdf8; margin: 0; font-weight: 500;" id="pad-status">Searching for controller...</p>
       <div class="bind-row"><span>Button A</span><button class="bind-key pad-bind" data-pad-btn="0">A</button></div>
       <div class="bind-row"><span>Button B</span><button class="bind-key pad-bind" data-pad-btn="1">S</button></div>
       <div class="bind-row"><span>Button X</span><button class="bind-key pad-bind" data-pad-btn="2">A</button></div>
@@ -522,7 +880,7 @@
         <h3 id="info-title">Game Info</h3>
         <button class="close-modal-btn" id="close-info">&times;</button>
       </div>
-      <div id="info-content" style="font-size: 0.8rem; color: #cbd5e1; line-height: 1.6;">
+      <div id="info-content" style="font-size: 0.9rem; color: #cbd5e1; line-height: 1.6;">
         <p id="info-year" style="margin: 0 0 0.5rem 0;"><strong>Year:</strong> <span id="info-year-val">-</span></p>
         <p id="info-tags" style="margin: 0 0 0.5rem 0;"><strong>Tags:</strong> <span id="info-tags-list">-</span></p>
         <p id="info-playtime" style="margin: 0 0 0.5rem 0;"><strong>Total Playtime:</strong> <span id="info-playtime-val">0:00</span></p>
@@ -538,20 +896,36 @@
         <h3>Game Notes</h3>
         <button class="close-modal-btn" id="close-notes">&times;</button>
       </div>
-      <textarea id="notes-textarea" style="width: 100%; height: 150px; padding: 0.5rem; background: rgba(30,41,59,0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: #f8fafc; font-family: monospace; font-size: 0.8rem; resize: vertical;"></textarea>
-      <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
+      <textarea id="notes-textarea" style="width: 100%; height: 150px; padding: 0.75rem; background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #f1f5f9; font-family: system-ui, sans-serif; font-size: 0.9rem; resize: vertical; outline: none;"></textarea>
+      <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
         <button class="control-btn" id="notes-clear">Clear</button>
-        <button class="control-btn" id="notes-save" style="border-color: #38bdf8;">Save</button>
+        <button class="control-btn" id="notes-save" style="border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;">Save</button>
       </div>
     </div>
   </div>
 
   <script>
     window.addEventListener("DOMContentLoaded", () => {
+      const pageLoader = document.getElementById("page-loader");
+      const loaderText = document.getElementById("loader-text");
+      const backBtn = document.getElementById("transition-back");
+
+      setTimeout(() => {
+        pageLoader.classList.add("fade-out");
+      }, 150);
+
+      backBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        loaderText.textContent = "Returning to Menu...";
+        pageLoader.classList.remove("fade-out");
+        setTimeout(() => {
+          window.location.href = backBtn.getAttribute("href");
+        }, 300);
+      });
+
       const urlParams = new URLSearchParams(window.location.search);
       const gameFile = urlParams.get("game") || "cactusmccoy.swf";
       const gameTitle = urlParams.get("title") || "Flash Game";
-      // Prefer explicit dimensions from games.json (fixes wrong/late Ruffle metadata)
       const paramW = parseInt(urlParams.get("w"), 10);
       const paramH = parseInt(urlParams.get("h"), 10);
       let forcedWidth = Number.isFinite(paramW) && paramW > 0 ? paramW : null;
@@ -579,14 +953,28 @@
       const fxModal = document.getElementById("fx-modal");
       const kbModal = document.getElementById("kb-modal");
       const mapperModal = document.getElementById("mapper-modal");
+      const mobileModal = document.getElementById("mobile-modal");
       const infoModal = document.getElementById("info-modal");
       const notesModal = document.getElementById("notes-modal");
       const padStatus = document.getElementById("pad-status");
       const volumeSlider = document.getElementById("volume-slider");
       const ambientBtn = document.getElementById("ambient-btn");
       const playtimeDisplay = document.getElementById("playtime-display");
+      const mobileToggleBtn = document.getElementById("mobile-toggle-btn");
 
-      // Per-game storage keys
+      let mobileControlsEnabled = localStorage.getItem("flash_mobile_controls") === "true";
+      if (mobileControlsEnabled) {
+        document.body.classList.add("mobile-controls-active");
+        mobileToggleBtn.textContent = "Enabled";
+      }
+
+      mobileToggleBtn.addEventListener("click", () => {
+        mobileControlsEnabled = !mobileControlsEnabled;
+        document.body.classList.toggle("mobile-controls-active", mobileControlsEnabled);
+        mobileToggleBtn.textContent = mobileControlsEnabled ? "Enabled" : "Disabled";
+        localStorage.setItem("flash_mobile_controls", mobileControlsEnabled);
+      });
+
       const gameStorageKey = `flash_game_${gameFile}`;
       const volumeKey = `${gameStorageKey}_volume`;
       const zoomKey = `${gameStorageKey}_zoom`;
@@ -594,7 +982,6 @@
       const playtimeKey = `${gameStorageKey}_playtime`;
       const lastSessionKey = `${gameStorageKey}_lastsession`;
 
-      // Load per-game volume
       const savedVolume = localStorage.getItem(volumeKey);
       if (savedVolume !== null) {
         volumeSlider.value = savedVolume;
@@ -607,7 +994,6 @@
         }
       }
 
-      // Playtime tracking
       let sessionStartTime = Date.now();
       let totalPlaytime = 0;
       
@@ -634,20 +1020,15 @@
         localStorage.setItem(lastSessionKey, new Date().toLocaleString());
       }
 
-      // Update playtime every second
       setInterval(updatePlaytimeDisplay, 1000);
-
-      // Save stats when leaving
       window.addEventListener("beforeunload", saveGameStats);
 
-      // Load game metadata
       let gameMetadata = null;
       fetch("games.json")
         .then(r => r.json())
         .then(games => {
           gameMetadata = games.find(g => g.file === gameFile);
           if (gameMetadata) {
-            // Display game info
             document.getElementById("info-title").textContent = gameMetadata.title;
             document.getElementById("info-year-val").textContent = gameMetadata.year || "-";
             const tagsList = (gameMetadata.tags || []).join(", ");
@@ -674,25 +1055,20 @@
         const swfWidth = forcedWidth || player.metadata?.width || 550;
         const swfHeight = forcedHeight || player.metadata?.height || 400;
 
-        // Keep Ruffle at native SWF resolution (preserves masks / HUD layout)
         player.style.width = swfWidth + "px";
         player.style.height = swfHeight + "px";
         player.style.minWidth = swfWidth + "px";
         player.style.minHeight = swfHeight + "px";
 
-        // Calculate fit-to-viewport scale (without user zoom)
-        // Reserve space at bottom for control bar (approx 50px)
         const effectiveHeight = wrapperHeight - 50;
         const fitScale = Math.min(wrapperWidth / swfWidth, effectiveHeight / swfHeight);
         const totalScale = fitScale * currentZoom;
 
-        // Apply transform scaling to game viewport only (control bar is outside, stays at full resolution)
         gameViewport.style.width = swfWidth + "px";
         gameViewport.style.height = swfHeight + "px";
         gameViewport.style.transform = "scale(" + totalScale + ")";
         gameViewport.style.transformOrigin = "center center";
 
-        // Counter-scale CRT scanlines to stay readable
         const linePx = Math.max(3.5 / totalScale, 0.4);
         gameViewport.style.setProperty("--scanline-size", linePx + "px");
       }
@@ -705,7 +1081,10 @@
         loadGameStats();
       });
 
-      window.addEventListener("resize", updateContainerAspect);
+      window.addEventListener("resize", () => {
+        updateContainerAspect();
+      });
+
       document.addEventListener("fullscreenchange", () => {
         setTimeout(updateContainerAspect, 60);
       });
@@ -763,11 +1142,114 @@
       const controllerBinds = JSON.parse(localStorage.getItem("flash_pad_map") || JSON.stringify({
         0: keyMap.KeyA, 1: keyMap.KeyS, 2: keyMap.KeyA, 3: keyMap.KeyD
       }));
+
+      const keyboardKeyOptions = [
+        { label: "Arrow Up", key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
+        { label: "Arrow Down", key: "ArrowDown", code: "ArrowDown", keyCode: 40 },
+        { label: "Arrow Left", key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 },
+        { label: "Arrow Right", key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
+        { label: "Spacebar", key: " ", code: "Space", keyCode: 32 },
+        { label: "Enter", key: "Enter", code: "Enter", keyCode: 13 },
+        { label: "Escape", key: "Escape", code: "Escape", keyCode: 27 },
+        { label: "Shift", key: "Shift", code: "ShiftLeft", keyCode: 16 },
+        { label: "Control", key: "Control", code: "ControlLeft", keyCode: 17 },
+        { label: "Alt", key: "Alt", code: "AltLeft", keyCode: 18 },
+        { label: "Key A", key: "a", code: "KeyA", keyCode: 65 },
+        { label: "Key B", key: "b", code: "KeyB", keyCode: 66 },
+        { label: "Key C", key: "c", code: "KeyC", keyCode: 67 },
+        { label: "Key D", key: "d", code: "KeyD", keyCode: 68 },
+        { label: "Key E", key: "e", code: "KeyE", keyCode: 69 },
+        { label: "Key F", key: "f", code: "KeyF", keyCode: 70 },
+        { label: "Key G", key: "g", code: "KeyG", keyCode: 71 },
+        { label: "Key H", key: "h", code: "KeyH", keyCode: 72 },
+        { label: "Key I", key: "i", code: "KeyI", keyCode: 73 },
+        { label: "Key J", key: "j", code: "KeyJ", keyCode: 74 },
+        { label: "Key K", key: "k", code: "KeyK", keyCode: 75 },
+        { label: "Key L", key: "l", code: "KeyL", keyCode: 76 },
+        { label: "Key M", key: "m", code: "KeyM", keyCode: 77 },
+        { label: "Key N", key: "n", code: "KeyN", keyCode: 78 },
+        { label: "Key O", key: "o", code: "KeyO", keyCode: 79 },
+        { label: "Key P", key: "p", code: "KeyP", keyCode: 80 },
+        { label: "Key Q", key: "q", code: "KeyQ", keyCode: 81 },
+        { label: "Key R", key: "r", code: "KeyR", keyCode: 82 },
+        { label: "Key S", key: "s", code: "KeyS", keyCode: 83 },
+        { label: "Key T", key: "t", code: "KeyT", keyCode: 84 },
+        { label: "Key U", key: "u", code: "KeyU", keyCode: 85 },
+        { label: "Key V", key: "v", code: "KeyV", keyCode: 86 },
+        { label: "Key W", key: "w", code: "KeyW", keyCode: 87 },
+        { label: "Key X", key: "x", code: "KeyX", keyCode: 88 },
+        { label: "Key Y", key: "y", code: "KeyY", keyCode: 89 },
+        { label: "Key Z", key: "z", code: "KeyZ", keyCode: 90 },
+        { label: "Digit 0", key: "0", code: "Digit0", keyCode: 48 },
+        { label: "Digit 1", key: "1", code: "Digit1", keyCode: 49 },
+        { label: "Digit 2", key: "2", code: "Digit2", keyCode: 50 },
+        { label: "Digit 3", key: "3", code: "Digit3", keyCode: 51 },
+        { label: "Digit 4", key: "4", code: "Digit4", keyCode: 52 },
+        { label: "Digit 5", key: "5", code: "Digit5", keyCode: 53 },
+        { label: "Digit 6", key: "6", code: "Digit6", keyCode: 54 },
+        { label: "Digit 7", key: "7", code: "Digit7", keyCode: 55 },
+        { label: "Digit 8", key: "8", code: "Digit8", keyCode: 56 },
+        { label: "Digit 9", key: "9", code: "Digit9", keyCode: 57 }
+      ];
+
+      const defaultTouchMap = {
+        ArrowUp: "ArrowUp",
+        ArrowDown: "ArrowDown",
+        ArrowLeft: "ArrowLeft",
+        ArrowRight: "ArrowRight",
+        Space: "Space",
+        KeyA: "KeyA",
+        KeyS: "KeyS"
+      };
+      const touchMap = JSON.parse(localStorage.getItem("flash_touch_map") || JSON.stringify(defaultTouchMap));
+
+      function initTouchDropdowns() {
+        document.querySelectorAll(".touch-bind-dropdown").forEach(select => {
+          const actionKey = select.getAttribute("data-touch-action");
+          select.innerHTML = "";
+          
+          keyboardKeyOptions.forEach(opt => {
+            const optElem = document.createElement("option");
+            optElem.value = opt.code;
+            optElem.textContent = opt.label;
+            
+            const mappedTargetKeyName = touchMap[actionKey];
+            const mappedObj = keyMap[mappedTargetKeyName] || defaultKeyMap[mappedTargetKeyName];
+            if (mappedObj && mappedObj.code === opt.code) {
+              optElem.selected = true;
+            }
+            select.appendChild(optElem);
+          });
+
+          select.onchange = (e) => {
+            const selectedCode = e.target.value;
+            const chosenOpt = keyboardKeyOptions.find(o => o.code === selectedCode);
+            if (chosenOpt) {
+              let foundTargetKeyName = null;
+              for (let kName in keyMap) {
+                if (keyMap[kName].code === chosenOpt.code) {
+                  foundTargetKeyName = kName;
+                  break;
+                }
+              }
+              if (!foundTargetKeyName) {
+                foundTargetKeyName = "Custom_" + chosenOpt.code;
+                keyMap[foundTargetKeyName] = { key: chosenOpt.key, code: chosenOpt.code, keyCode: chosenOpt.keyCode };
+              }
+              touchMap[actionKey] = foundTargetKeyName;
+              saveBindings();
+            }
+          };
+        });
+      }
+      initTouchDropdowns();
+
       const activePadState = {};
 
       function saveBindings() {
         localStorage.setItem("flash_key_map", JSON.stringify(keyMap));
         localStorage.setItem("flash_pad_map", JSON.stringify(controllerBinds));
+        localStorage.setItem("flash_touch_map", JSON.stringify(touchMap));
       }
 
       document.getElementById("fs-btn").addEventListener("click", () => {
@@ -777,7 +1259,14 @@
 
       document.getElementById("theater-btn").addEventListener("click", () => {
         document.body.classList.toggle("theater-mode");
-        setTimeout(updateContainerAspect, 200);
+        let startTime = performance.now();
+        function smoothResizeAnim(time) {
+          updateContainerAspect();
+          if (time - startTime < 350) {
+            requestAnimationFrame(smoothResizeAnim);
+          }
+        }
+        requestAnimationFrame(smoothResizeAnim);
       });
 
       document.getElementById("play-pause-btn").addEventListener("click", (e) => {
@@ -801,6 +1290,8 @@
       document.getElementById("close-kb").onclick = () => { kbModal.classList.remove("open"); wrapper.focus(); };
       document.getElementById("mapper-btn").onclick = () => mapperModal.classList.add("open");
       document.getElementById("close-mapper").onclick = () => { mapperModal.classList.remove("open"); wrapper.focus(); };
+      document.getElementById("mobile-modal-btn").onclick = () => mobileModal.classList.add("open");
+      document.getElementById("close-mobile").onclick = () => { mobileModal.classList.remove("open"); wrapper.focus(); };
       
       document.getElementById("info-btn").onclick = () => { updateGameInfo(); infoModal.classList.add("open"); };
       document.getElementById("close-info").onclick = () => { infoModal.classList.remove("open"); wrapper.focus(); };
@@ -846,7 +1337,6 @@
       zoomOutBtn.addEventListener("click", () => zoomAdjust(-0.1));
       zoomInBtn.addEventListener("click", () => zoomAdjust(0.1));
 
-      // Keyboard zoom shortcuts
       wrapper.addEventListener("keydown", (e) => {
         if (e.ctrlKey || e.metaKey) {
           if (e.key === "+" || e.key === "=") {
@@ -867,11 +1357,13 @@
       updateZoomDisplay();
 
       document.querySelectorAll(".bind-key").forEach(btn => {
-        if (btn.id.startsWith("toggle-")) return;
+        if (btn.id.startsWith("toggle-") || btn.id === "mobile-toggle-btn") return;
         btn.addEventListener("click", (e) => {
           if (activeListeningBtn) activeListeningBtn.classList.remove("listening");
           activeListeningBtn = e.target;
-          listeningType = btn.classList.contains("kb-bind") ? "kb" : "pad";
+          if (btn.classList.contains("kb-bind")) listeningType = "kb";
+          else if (btn.classList.contains("pad-bind")) listeningType = "pad";
+          
           activeListeningBtn.classList.add("listening");
           activeListeningBtn.textContent = "Press Key...";
         });
@@ -881,11 +1373,13 @@
         if (!activeListeningBtn) return;
         e.preventDefault();
         const label = e.key === " " ? "Space" : (e.key.length === 1 ? e.key.toUpperCase() : e.key);
+        
         if (listeningType === "kb") {
           keyMap[activeListeningBtn.getAttribute("data-target")] = { key: e.key, code: e.code, keyCode: e.keyCode };
-        } else {
+        } else if (listeningType === "pad") {
           controllerBinds[activeListeningBtn.getAttribute("data-pad-btn")] = { key: e.key, code: e.code, keyCode: e.keyCode };
         }
+
         saveBindings();
         activeListeningBtn.textContent = label;
         activeListeningBtn.classList.remove("listening");
@@ -896,6 +1390,34 @@
         if (!player || !info) return;
         player.dispatchEvent(new KeyboardEvent(type, { key: info.key, code: info.code, keyCode: info.keyCode, bubbles: true }));
       }
+
+      // Touch controls event wiring with explicit focus prevention and retention
+      document.querySelectorAll(".v-btn, .v-action-btn").forEach(vBtn => {
+        const actionKey = vBtn.getAttribute("data-action");
+        const getMapping = () => {
+          const targetKeyName = touchMap[actionKey] || actionKey;
+          return keyMap[targetKeyName] || defaultKeyMap[targetKeyName] || { key: "a", code: "KeyA", keyCode: 65 };
+        };
+
+        const handleTouchStart = (e) => {
+          e.preventDefault();
+          vBtn.classList.add("touched");
+          sendSyntheticKey("keydown", getMapping());
+          setTimeout(() => wrapper.focus(), 10);
+        };
+
+        const handleTouchEnd = (e) => {
+          e.preventDefault();
+          vBtn.classList.remove("touched");
+          sendSyntheticKey("keyup", getMapping());
+          setTimeout(() => wrapper.focus(), 10);
+        };
+
+        vBtn.addEventListener("touchstart", handleTouchStart, { passive: false });
+        vBtn.addEventListener("touchend", handleTouchEnd, { passive: false });
+        vBtn.addEventListener("mousedown", handleTouchStart);
+        vBtn.addEventListener("mouseup", handleTouchEnd);
+      });
 
       function gameLoop() {
         const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
