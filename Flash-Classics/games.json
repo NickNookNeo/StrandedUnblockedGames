@@ -3,18 +3,24 @@
     "file": "mario_combat.swf",
     "title": "Mario Combat",
     "thumbnail": "mario_combat.jpg",
-    "tags": ["action", "fighting", "arcade"]
+    "tags": ["action", "fighting", "arcade"],
+    "width": 1920,
+    "height": 1080
   },
   {
     "file": "cactus_mccoy.swf",
     "title": "Cactus McCoy",
     "thumbnail": "cactus_mccoy.jpg",
-    "tags": ["action", "platformer", "adventure"]
+    "tags": ["action", "platformer", "adventure"],
+    "width": 608,
+    "height": 480
   },
   {
     "file": "papalouie.swf",
     "title": "Papa Louie",
     "thumbnail": "papalouie.jpg",
-    "tags": ["platformer", "puzzle", "educational"]
+    "tags": ["platformer", "puzzle", "educational"],
+    "width": 550,
+    "height": 400
   }
 ]

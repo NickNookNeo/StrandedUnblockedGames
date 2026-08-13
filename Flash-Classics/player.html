@@ -88,7 +88,6 @@
       width: 100%;
     }
 
-    /* Fixed Layout Wrapper that completely bypasses rigid flex box constraints */
     .player-wrapper {
       position: relative;
       width: 100%;
@@ -103,12 +102,10 @@
 
     .game-viewport {
       position: relative;
-      width: 100%;
-      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
+      overflow: visible;
     }
 
     .screen-perspective {
@@ -152,18 +149,17 @@
       border-radius: inherit;
     }
 
-    /* Enforce strict Ruffle sizing compliance */
     ruffle-player {
-      width: 100% !important;
-      height: 100% !important;
       display: block !important;
+      overflow: hidden !important;
     }
 
     ruffle-player::part(container),
     ruffle-player::part(canvas) {
       width: 100% !important;
       height: 100% !important;
-      object-fit: contain !important;
+      object-fit: fill !important;
+      overflow: hidden !important;
     }
 
     .retro-crt-overlay {
@@ -178,7 +174,7 @@
 
     @keyframes crt-roll {
       0% { background-position: 0 0; }
-      100% { background-position: 0 12px; }
+      100% { background-position: 0 var(--scanline-size, 4px); }
     }
 
     @keyframes crt-flicker {
@@ -190,7 +186,7 @@
     body.fx-scanlines .retro-crt-overlay {
       display: block;
       background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%);
-      background-size: 100% 4px;
+      background-size: 100% var(--scanline-size, 4px);
       animation: crt-roll 0.8s linear infinite, crt-flicker 0.15s infinite;
     }
 
@@ -218,7 +214,7 @@
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 35px;
+      height: 6px;
       z-index: 120;
     }
 
@@ -232,11 +228,12 @@
       justify-content: space-between;
       background: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(12px);
-      padding: 6px 10px;
+      padding: 4px 8px;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       transform: translateY(100%);
-      transition: transform 0.25s ease-in-out;
+      transition: transform 0.2s ease-in-out;
       z-index: 130;
+      font-size: 0.65rem;
     }
 
     .control-hover-trigger:hover ~ .control-bar,
@@ -392,7 +389,6 @@
     }
   </style>
 
-  <!-- Load Ruffle library -->
   <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
   <script>
     window.RufflePlayer = window.RufflePlayer || {};
@@ -401,7 +397,7 @@
       "letterbox": "on",
       "wmode": "window",
       "backgroundColor": "#000000",
-      "renderer": "canvas",
+      "preferredRenderer": "canvas",
       "allowScriptAccess": true
     };
   </script>
@@ -427,7 +423,6 @@
         <div class="game-container" id="game-container">
           <div class="flash-overlay" id="flash-overlay"></div>
           <div class="retro-crt-overlay"></div>
-          <!-- Ruffle player injected dynamically via JS -->
         </div>
       </div>
 
@@ -449,7 +444,6 @@
     </div>
   </div>
 
-  <!-- FX Modal -->
   <div class="modal-overlay" id="fx-modal">
     <div class="modal-card">
       <div class="modal-header">
@@ -471,7 +465,6 @@
     </div>
   </div>
 
-  <!-- Keyboard Binds Modal -->
   <div class="modal-overlay" id="kb-modal">
     <div class="modal-card">
       <div class="modal-header">
@@ -489,7 +482,6 @@
     </div>
   </div>
 
-  <!-- Controller Binds Modal -->
   <div class="modal-overlay" id="mapper-modal">
     <div class="modal-card">
       <div class="modal-header">
@@ -509,6 +501,10 @@
       const urlParams = new URLSearchParams(window.location.search);
       const gameFile = urlParams.get("game") || "cactusmccoy.swf";
       const gameTitle = urlParams.get("title") || "Flash Game";
+      const paramW = parseInt(urlParams.get("w"), 10);
+      const paramH = parseInt(urlParams.get("h"), 10);
+      let forcedWidth = Number.isFinite(paramW) && paramW > 0 ? paramW : null;
+      let forcedHeight = Number.isFinite(paramH) && paramH > 0 ? paramH : null;
 
       document.getElementById("display-title").textContent = gameTitle;
       document.title = `${gameTitle} - Flash Player`;
@@ -520,7 +516,14 @@
       const ruffle = window.RufflePlayer.newest();
       const player = ruffle.createPlayer();
       gameContainer.insertBefore(player, gameContainer.firstChild);
-      player.load(`assets/${gameFile}`);
+      player.load({
+        url: `assets/${gameFile}`,
+        preferredRenderer: "canvas",
+        scale: "showAll",
+        letterbox: "on",
+        backgroundColor: "#000000",
+        allowScriptAccess: true
+      });
 
       const fxModal = document.getElementById("fx-modal");
       const kbModal = document.getElementById("kb-modal");
@@ -543,27 +546,33 @@
         }
       }
 
-      // Explicit mathematical aspect ratio correction logic matching original Flash container boundaries
       function updateContainerAspect() {
         const wrapperWidth = wrapper.clientWidth;
         const wrapperHeight = wrapper.clientHeight;
         if (wrapperWidth === 0 || wrapperHeight === 0) return;
 
-        const swfWidth = player.metadata?.width || 550;
-        const swfHeight = player.metadata?.height || 400;
-        const targetRatio = swfWidth / swfHeight;
-        const wrapperRatio = wrapperWidth / wrapperHeight;
+        const swfWidth = forcedWidth || player.metadata?.width || 550;
+        const swfHeight = forcedHeight || player.metadata?.height || 400;
 
-        if (wrapperRatio > targetRatio) {
-          gameViewport.style.height = `${wrapperHeight}px`;
-          gameViewport.style.width = `${wrapperHeight * targetRatio}px`;
-        } else {
-          gameViewport.style.width = `${wrapperWidth}px`;
-          gameViewport.style.height = `${wrapperWidth / targetRatio}px`;
-        }
+        player.style.width = swfWidth + "px";
+        player.style.height = swfHeight + "px";
+        player.style.maxWidth = swfWidth + "px";
+        player.style.maxHeight = swfHeight + "px";
+
+        const scale = Math.min(wrapperWidth / swfWidth, wrapperHeight / swfHeight);
+        gameViewport.style.width = swfWidth + "px";
+        gameViewport.style.height = swfHeight + "px";
+        gameViewport.style.transform = "scale(" + scale + ")";
+        gameViewport.style.transformOrigin = "center center";
+
+        // Counter-scale CRT scanlines so they stay ~3-4 screen pixels after transform
+        const linePx = Math.max(3.5 / scale, 0.4);
+        gameViewport.style.setProperty("--scanline-size", linePx + "px");
       }
 
       player.addEventListener("loadedmetadata", () => {
+        if (!forcedWidth && player.metadata?.width) forcedWidth = player.metadata.width;
+        if (!forcedHeight && player.metadata?.height) forcedHeight = player.metadata.height;
         updateContainerAspect();
         applyVolume(parseFloat(volumeSlider.value));
       });
@@ -611,17 +620,100 @@
         document.body.classList.toggle("ambient-mode");
       });
 
-      shotBtn.addEventListener("click", () => {
-        let canvas = player.shadowRoot ? player.shadowRoot.querySelector("canvas") : player.querySelector("canvas");
-        if (!canvas) return;
-        flashOverlay.classList.add("active");
-        setTimeout(() => flashOverlay.classList.remove("active"), 300);
+      shotBtn.addEventListener("click", async () => {
+        function findCanvas(root) {
+          if (!root) return null;
+          if (root.querySelector) {
+            const c = root.querySelector("canvas");
+            if (c) return c;
+          }
+          const kids = root.querySelectorAll ? root.querySelectorAll("*") : [];
+          for (const el of kids) {
+            if (el.shadowRoot) {
+              const found = findCanvas(el.shadowRoot);
+              if (found) return found;
+            }
+          }
+          return null;
+        }
+
+        let canvas = null;
         try {
+          if (player.shadowRoot) canvas = findCanvas(player.shadowRoot);
+          if (!canvas) canvas = findCanvas(player);
+          if (!canvas) canvas = document.querySelector("ruffle-player canvas");
+        } catch (e) {
+          console.error("Canvas search failed:", e);
+        }
+
+        if (!canvas) {
+          alert("Screenshot failed: no canvas found. Is the game loaded?");
+          return;
+        }
+
+        console.log("Screenshot canvas:", canvas.width, "x", canvas.height, canvas);
+
+        flashOverlay.classList.add("active");
+        setTimeout(() => flashOverlay.classList.remove("active"), 250);
+
+        const filename = (gameTitle || "flash_game").replace(/[^a-z0-9]+/gi, "_").toLowerCase() + "_snapshot.png";
+
+        function downloadBlob(blob) {
+          const url = URL.createObjectURL(blob);
           const link = document.createElement("a");
-          link.download = `${gameTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_snapshot.png`;
-          link.href = canvas.toDataURL("image/png");
+          link.download = filename;
+          link.href = url;
+          document.body.appendChild(link);
           link.click();
-        } catch (err) { console.error(err); }
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 2000);
+        }
+
+        try {
+          const w = canvas.width || 1;
+          const h = canvas.height || 1;
+          const out = document.createElement("canvas");
+          out.width = w;
+          out.height = h;
+          const ctx = out.getContext("2d");
+          ctx.drawImage(canvas, 0, 0, w, h);
+
+          if (out.toBlob) {
+            out.toBlob((blob) => {
+              if (!blob) {
+                alert("Screenshot failed: empty image.");
+                return;
+              }
+              downloadBlob(blob);
+            }, "image/png");
+          } else {
+            const dataUrl = out.toDataURL("image/png");
+            const link = document.createElement("a");
+            link.download = filename;
+            link.href = dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+          }
+        } catch (err) {
+          console.error("Screenshot error:", err);
+          try {
+            const dataUrl = canvas.toDataURL("image/png");
+            if (!dataUrl || dataUrl === "data:," || dataUrl.length < 100) {
+              alert("Screenshot is blank. Hard-refresh so preferredRenderer=canvas takes effect.");
+              return;
+            }
+            const link = document.createElement("a");
+            link.download = filename;
+            link.href = dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+          } catch (err2) {
+            console.error("Fallback failed:", err2);
+            alert("Screenshot failed: " + (err2.message || err2));
+          }
+        }
       });
 
       const defaultKeyMap = {
