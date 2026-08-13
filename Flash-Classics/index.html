@@ -16,6 +16,7 @@
       --text-color: #f8fafc;
       --accent-color: #38bdf8;
       --border-color: rgba(255, 255, 255, 0.1);
+      --fav-color: #f43f5e;
     }
 
     html, body {
@@ -39,6 +40,11 @@
     header {
       margin-bottom: 2rem;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 1200px;
     }
 
     h1 {
@@ -54,8 +60,103 @@
 
     p.subtitle {
       color: #94a3b8;
-      margin: 0;
+      margin: 0 0 1rem 0;
       font-size: 0.95rem;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 1rem;
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    #search-input {
+      flex: 1;
+      min-width: 250px;
+      padding: 0.75rem 1rem;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-color);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #search-input:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .tab-btn {
+      padding: 0.75rem 1rem;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-color);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    .tab-btn.active, .tab-btn:hover {
+      background-color: var(--card-hover);
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+    }
+
+    .tags-container {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .tag-pill {
+      padding: 0.35rem 0.8rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+      box-sizing: border-box;
+      height: 31px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+    }
+
+    .tag-pill.active, .tag-pill:hover {
+      background-color: var(--accent-color);
+      color: #050811;
+      border-color: var(--accent-color);
+      font-weight: 600;
+    }
+
+    .section-title {
+      width: 100%;
+      max-width: 1200px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 1rem 0 0.5rem 0;
+      color: var(--accent-color);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .grid {
@@ -64,6 +165,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
       gap: 1.5rem;
+      margin-bottom: 2rem;
     }
 
     .game-card {
@@ -75,6 +177,7 @@
       color: var(--text-color);
       display: flex;
       flex-direction: column;
+      position: relative;
       transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     }
@@ -85,38 +188,78 @@
       border-color: var(--accent-color);
     }
 
-    .card-image {
+    .card-image-wrap {
+      position: relative;
       width: 100%;
       height: 150px;
       background-color: #0f172a;
       overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
-    .card-image img {
+    .card-image-wrap img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       transition: transform 0.3s ease;
     }
 
-    .game-card:hover .card-image img {
+    .game-card:hover .card-image-wrap img {
       transform: scale(1.05);
+    }
+
+    .fav-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #94a3b8;
+      font-size: 1rem;
+      transition: background 0.2s, color 0.2s;
+      z-index: 2;
+    }
+
+    .fav-btn:hover {
+      background: rgba(15, 23, 42, 0.95);
+      color: var(--fav-color);
+    }
+
+    .fav-btn.is-fav {
+      color: var(--fav-color);
     }
 
     .card-content {
       padding: 1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.5rem;
     }
 
     .card-content h3 {
       margin: 0;
       font-size: 1.1rem;
       font-weight: 700;
+    }
+
+    .card-tags {
+      display: flex;
+      gap: 0.3rem;
+      flex-wrap: wrap;
+    }
+
+    .card-tag {
+      font-size: 0.7rem;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #94a3b8;
     }
 
     .loading-text, .error-text {
@@ -133,8 +276,26 @@
   <header>
     <h1>Flash Game Library</h1>
     <p class="subtitle">Select a game below to start playing</p>
+    
+    <div class="controls-row">
+      <input type="text" id="search-input" placeholder="Search games..." autocomplete="off">
+      <div class="nav-tabs">
+        <button class="tab-btn active" data-tab="all">All</button>
+        <button class="tab-btn" data-tab="favs">Favorites</button>
+      </div>
+    </div>
+
+    <div class="tags-container" id="tags-container">
+      <button class="tag-pill active" data-tag="all">All Tags</button>
+    </div>
   </header>
 
+  <div id="recent-section" style="width: 100%; max-width: 1200px; display: none;">
+    <div class="section-title">⏱️ Recently Played</div>
+    <div id="recent-grid" class="grid" style="margin-bottom: 2rem;"></div>
+  </div>
+
+  <div class="section-title" id="library-title">🎮 All Games</div>
   <div id="game-grid" class="grid">
     <div class="loading-text">Loading games library...</div>
   </div>
@@ -142,6 +303,120 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const gridContainer = document.getElementById("game-grid");
+      const recentGrid = document.getElementById("recent-grid");
+      const recentSection = document.getElementById("recent-section");
+      const searchInput = document.getElementById("search-input");
+      const tagsContainer = document.getElementById("tags-container");
+      
+      let allGames = [];
+      let currentFilterTab = "all";
+      let currentTag = "all";
+      
+      const FAV_KEY = "flash_favorites";
+      const HISTORY_KEY = "flash_history";
+
+      function getFavorites() {
+        try { return JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch(e) { return []; }
+      }
+
+      function toggleFavorite(file, e) {
+        e.preventDefault();
+        e.stopPropagation();
+        let favs = getFavorites();
+        if (favs.includes(file)) {
+          favs = favs.filter(f => f !== file);
+        } else {
+          favs.push(file);
+        }
+        localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+        applyFilters();
+      }
+
+      function addToHistory(game) {
+        let history = [];
+        try { history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; } catch(e) {}
+        history = history.filter(item => item.file !== game.file);
+        history.unshift(game);
+        if (history.length > 4) history.pop();
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+      }
+
+      function renderCard(game, container) {
+        const favs = getFavorites();
+        const isFav = favs.includes(game.file);
+
+        const card = document.createElement("a");
+        card.href = `player.html?game=${encodeURIComponent(game.file)}&title=${encodeURIComponent(game.title)}`;
+        card.className = "game-card";
+        
+        card.addEventListener("click", () => addToHistory(game));
+
+        const tagsHtml = (game.tags || []).map(t => `<span class="card-tag">${t}</span>`).join("");
+
+        card.innerHTML = `
+          <div class="card-image-wrap">
+            <button class="fav-btn ${isFav ? 'is-fav' : ''}" title="Favorite">
+              ${isFav ? '❤️' : '🤍'}
+            </button>
+            <img src="assets/${game.thumbnail || 'default.jpg'}" alt="${game.title}" loading="lazy">
+          </div>
+          <div class="card-content">
+            <h3>${game.title}</h3>
+            <div class="card-tags">${tagsHtml}</div>
+          </div>
+        `;
+
+        card.querySelector(".fav-btn").addEventListener("click", (e) => toggleFavorite(game.file, e));
+        container.appendChild(card);
+      }
+
+      function renderRecent() {
+        let history = [];
+        try { history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; } catch(e) {}
+        
+        recentGrid.innerHTML = "";
+        if (history.length > 0 && currentFilterTab === "all" && currentTag === "all" && !searchInput.value) {
+          recentSection.style.display = "block";
+          history.forEach(game => renderCard(game, recentGrid));
+        } else {
+          recentSection.style.display = "none";
+        }
+      }
+
+      function renderTagsList(games) {
+        const tagsSet = new Set();
+        games.forEach(g => (g.tags || []).forEach(t => tagsSet.add(t)));
+        
+        tagsContainer.innerHTML = `<button class="tag-pill ${currentTag === 'all' ? 'active' : ''}" data-tag="all">All Tags</button>`;
+        tagsSet.forEach(tag => {
+          const btn = document.createElement("button");
+          btn.className = `tag-pill ${currentTag === tag ? 'active' : ''}`;
+          btn.setAttribute("data-tag", tag);
+          btn.textContent = tag.toUpperCase();
+          tagsContainer.appendChild(btn);
+        });
+      }
+
+      function applyFilters() {
+        const query = searchInput.value.toLowerCase().trim();
+        const favs = getFavorites();
+
+        let filtered = allGames.filter(game => {
+          if (currentFilterTab === "favs" && !favs.includes(game.file)) return false;
+          if (currentTag !== "all" && (!(game.tags || []).includes(currentTag))) return false;
+          if (query && !game.title.toLowerCase().includes(query)) return false;
+          return true;
+        });
+
+        gridContainer.innerHTML = "";
+        if (filtered.length === 0) {
+          gridContainer.innerHTML = '<div class="error-text">No games found matching your criteria.</div>';
+        } else {
+          filtered.forEach(game => renderCard(game, gridContainer));
+        }
+
+        renderRecent();
+      }
 
       fetch("games.json")
         .then(response => {
@@ -149,34 +424,34 @@
           return response.json();
         })
         .then(games => {
-          gridContainer.innerHTML = ""; // Clear loader
-          
-          if (games.length === 0) {
-            gridContainer.innerHTML = '<div class="error-text">No games found in games.json.</div>';
-            return;
-          }
-
-          games.forEach(game => {
-            const card = document.createElement("a");
-            card.href = `player.html?game=${encodeURIComponent(game.file)}&title=${encodeURIComponent(game.title)}`;
-            card.className = "game-card";
-            
-            card.innerHTML = `
-              <div class="card-image">
-                <img src="assets/${game.thumbnail || 'default.jpg'}" alt="${game.title}" loading="lazy">
-              </div>
-              <div class="card-content">
-                <h3>${game.title}</h3>
-              </div>
-            `;
-            
-            gridContainer.appendChild(card);
-          });
+          allGames = games;
+          renderTagsList(allGames);
+          applyFilters();
         })
         .catch(error => {
           console.error("Error loading games list:", error);
           gridContainer.innerHTML = '<div class="error-text">Failed to load games list. Check console for details.</div>';
         });
+
+      searchInput.addEventListener("input", applyFilters);
+
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+          e.target.classList.add("active");
+          currentFilterTab = e.target.getAttribute("data-tab");
+          applyFilters();
+        });
+      });
+
+      tagsContainer.addEventListener("click", (e) => {
+        if (e.target.classList.contains("tag-pill")) {
+          document.querySelectorAll(".tag-pill").forEach(p => p.classList.remove("active"));
+          e.target.classList.add("active");
+          currentTag = e.target.getAttribute("data-tag");
+          applyFilters();
+        }
+      });
     });
   </script>
 </body>

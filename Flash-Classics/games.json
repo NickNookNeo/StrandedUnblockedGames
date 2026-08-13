@@ -2,11 +2,13 @@
   {
     "file": "mario_combat.swf",
     "title": "Mario Combat",
-    "thumbnail": "mario_combat.jpg"
+    "thumbnail": "mario_combat.jpg",
+    "tags": ["action", "fighting", "arcade"]
   },
   {
     "file": "cactus_mccoy.swf",
     "title": "Cactus McCoy",
-    "thumbnail": "cactus_mccoy.jpg"
+    "thumbnail": "cactus_mccoy.jpg",
+    "tags": ["action", "platformer", "adventure"]
   }
 ]

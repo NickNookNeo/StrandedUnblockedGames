@@ -32,7 +32,7 @@
     }
 
     body {
-      padding: 0.75rem;
+      padding: 0.4rem;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -44,7 +44,7 @@
       max-width: 1200px;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.25rem;
       flex-shrink: 0;
     }
 
@@ -61,9 +61,9 @@
       text-decoration: none;
       background-color: var(--card-bg);
       backdrop-filter: blur(8px);
-      padding: 0.4rem 0.8rem;
+      padding: 0.3rem 0.6rem;
       border-radius: 6px;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 600;
       border: 1px solid var(--border-color);
       transition: background-color 0.2s, color 0.2s;
@@ -78,7 +78,7 @@
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 1.5rem;
+      font-size: 1.15rem;
       font-weight: 800;
       margin: 0;
       text-transform: uppercase;
@@ -92,14 +92,13 @@
     .header-controls {
       display: flex;
       justify-content: center;
-      gap: 10px;
+      gap: 6px;
       width: 100%;
     }
 
     .player-wrapper {
       position: relative;
       width: 100%;
-      max-width: 1200px;
       flex: 1;
       display: flex;
       align-items: center;
@@ -107,36 +106,37 @@
       background: transparent !important;
       overflow: hidden !important;
       border: none !important;
-      box-shadow: none !important;
       outline: none;
-      margin: 0.5rem 0;
+      min-height: 0;
     }
 
+    /* Fluid container driven strictly by the dynamic aspect ratio computed from SWF metadata */
     .game-container {
       position: relative;
+      height: 100%;
+      max-width: 100%;
+      aspect-ratio: var(--game-aspect, 4 / 3);
+      max-height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden !important;
       background: #000 !important;
-      border-radius: 8px;
+      border-radius: 6px;
     }
 
-    ruffle-embed, ruffle-object, ruffle-player, #flash-container {
+    ruffle-player {
       width: 100% !important;
       height: 100% !important;
       display: block !important;
       background: transparent !important;
       overflow: hidden !important;
-      --ruffle-background-color: transparent !important;
     }
 
     ruffle-player::part(container),
-    ruffle-embed::part(container),
-    ruffle-object::part(container),
-    ruffle-player::part(canvas),
-    ruffle-embed::part(canvas),
-    ruffle-object::part(canvas) {
+    ruffle-player::part(canvas) {
+      width: 100% !important;
+      height: 100% !important;
       background: transparent !important;
       overflow: hidden !important;
     }
@@ -176,7 +176,7 @@
       justify-content: space-between;
       background: rgba(15, 23, 42, 0.95);
       backdrop-filter: blur(12px);
-      padding: 8px 12px;
+      padding: 6px 10px;
       border-top: 1px solid var(--border-color);
       transform: translateY(100%);
       transition: transform 0.25s ease-in-out;
@@ -317,7 +317,8 @@
     window.RufflePlayer = window.RufflePlayer || {};
     window.RufflePlayer.config = {
       "scale": "showAll",
-      "forceScale": false,
+      "forceScale": true,        /* Blocks games from breaking aspect ratios */
+      "forceAlign": true,        /* Blocks games from offsetting canvas bounds */
       "letterbox": "on",
       "wmode": "transparent",
       "backgroundColor": null
@@ -330,7 +331,7 @@
     <div class="header-top">
       <a href="index.html" class="back-btn">&larr; Games List</a>
       <h1 class="game-title" id="display-title">Loading...</h1>
-      <div style="width: 100px;"></div>
+      <div style="width: 80px;"></div>
     </div>
     
     <div class="header-controls">
@@ -357,6 +358,7 @@
     </div>
   </div>
 
+  <!-- Modals -->
   <div class="modal-overlay" id="kb-modal">
     <div class="modal-card">
       <div class="modal-header">
@@ -442,15 +444,12 @@
       document.title = `${gameTitle} - Flash Player`;
 
       const gameContainer = document.getElementById("game-container");
-      const flashObjHTML = `
-        <object id="flash-container" type="application/x-shockwave-flash" data="assets/${gameFile}">
-          <param name="scale" value="showAll" />
-          <param name="wmode" value="transparent" />
-          <param name="bgcolor" value="transparent" />
-          <p>Unable to load Flash content.</p>
-        </object>
-      `;
-      gameContainer.insertAdjacentHTML("afterbegin", flashObjHTML);
+
+      // Use Ruffle's native JS API to instantiate the player dynamically
+      const ruffle = window.RufflePlayer.newest();
+      const player = ruffle.createPlayer();
+      gameContainer.insertBefore(player, gameContainer.firstChild);
+      player.load(`assets/${gameFile}`);
 
       const wrapper = document.getElementById("player-wrapper");
       const kbModal = document.getElementById("kb-modal");
@@ -462,67 +461,26 @@
       let listeningType = null;
       let isPaused = false;
 
-      function getPlayer() {
-        return document.querySelector("ruffle-embed, ruffle-object, ruffle-player, #flash-container");
+      // Automatically reads metadata width and height directly from the loaded SWF to update container aspect ratio dynamically
+      function updateAspectRatio() {
+        if (!player || !player.metadata) return false;
+        const w = player.metadata.width;
+        const h = player.metadata.height;
+
+        if (w > 0 && h > 0) {
+          gameContainer.style.setProperty('--game-aspect', `${w} / ${h}`);
+          return true;
+        }
+        return false;
       }
 
-      function fitGameContainer() {
-        const player = getPlayer();
-        if (!wrapper || !gameContainer) return false;
-
-        const wrapperW = wrapper.clientWidth;
-        const wrapperH = wrapper.clientHeight;
-        if (!wrapperW || !wrapperH) return false;
-
-        const currentGameFile = urlParams.get("game") || "";
-
-        let aspect;
-        if (currentGameFile.toLowerCase().includes("mario_combat")) {
-          aspect = 16 / 9;
-        } else {
-          let gameW = 0, gameH = 0;
-          if (player) {
-            if (player.metadata && player.metadata.width && player.metadata.height) {
-              gameW = player.metadata.width;
-              gameH = player.metadata.height;
-            } else {
-              const canvas = player.shadowRoot ? player.shadowRoot.querySelector("canvas") : player.querySelector("canvas");
-              if (canvas) {
-                gameW = canvas.width || canvas.clientWidth;
-                gameH = canvas.height || canvas.clientHeight;
-              }
-            }
-          }
-          if (!gameW || !gameH) return false;
-          aspect = gameW / gameH;
-        }
-
-        const wrapperAspect = wrapperW / wrapperH;
-        let finalW, finalH;
-
-        if (wrapperAspect > aspect) {
-          finalH = wrapperH;
-          finalW = wrapperH * aspect;
-        } else {
-          finalW = wrapperW;
-          finalH = wrapperW / aspect;
-        }
-
-        gameContainer.style.width = Math.floor(finalW) + "px";
-        gameContainer.style.height = Math.floor(finalH) + "px";
-        return true;
-      }
-
-      window.addEventListener("resize", fitGameContainer);
-      
-      const loadPoll = setInterval(() => {
-        const success = fitGameContainer();
-        if (success) {
-          clearInterval(loadPoll);
+      const ratioPoll = setInterval(() => {
+        if (updateAspectRatio()) {
+          clearInterval(ratioPoll);
         }
       }, 50);
 
-      setTimeout(() => clearInterval(loadPoll), 5000);
+      setTimeout(() => clearInterval(ratioPoll), 5000);
 
       const defaultKeyMap = {
         ArrowLeft:  { key: "ArrowLeft",  code: "ArrowLeft",  keyCode: 37 },
@@ -579,11 +537,9 @@
 
       document.getElementById("theater-btn").addEventListener("click", () => {
         document.body.classList.toggle("theater-mode");
-        setTimeout(fitGameContainer, 50);
       });
 
       document.getElementById("play-pause-btn").addEventListener("click", (e) => {
-        const player = getPlayer();
         if (!player) return;
         if (isPaused) { 
           if (typeof player.play === "function") player.play(); 
@@ -596,18 +552,12 @@
       });
 
       document.getElementById("reload-btn").addEventListener("click", () => {
-        const player = getPlayer();
         if (player && typeof player.reload === "function") {
           player.reload();
-        } else if (player) {
-          const currentData = player.getAttribute("data");
-          player.setAttribute("data", "");
-          setTimeout(() => player.setAttribute("data", currentData), 10);
         }
       });
 
       volumeSlider.addEventListener("input", (e) => {
-        const player = getPlayer();
         if (player) {
           const val = parseFloat(e.target.value);
           if (typeof player.setVolume === "function") {
@@ -666,9 +616,8 @@
       });
 
       function sendSyntheticKey(type, keyInfo) {
-        const target = getPlayer();
-        if (!target || !keyInfo) return;
-        target.dispatchEvent(new KeyboardEvent(type, {
+        if (!player || !keyInfo) return;
+        player.dispatchEvent(new KeyboardEvent(type, {
           key: keyInfo.key,
           code: keyInfo.code,
           keyCode: keyInfo.keyCode,
