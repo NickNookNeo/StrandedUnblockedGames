@@ -1,20 +1,20 @@
 [
   {
     "title": "Flash Classics!",
-    "url": "/Flash-Classics",
-    "thumbnail": "flash.jpg",
+    "url": "Flash-Classics/index.html",
+    "thumbnail": "flash.png",
     "tags": ["Flash", "Retro", "Games"]
   },
   {
     "title": "Super Mario 64",
-    "url": "/Mario64",
+    "url": "Mario64/index.html",
     "thumbnail": "mario.jpg",
     "tags": ["3D", "Platformer", "Port"]
   },
   {
     "title": "Backrooms",
-    "url": "/Backrooms",
-    "thumbnail": "backrooms.jpg",
+    "url": "Backrooms/index.html",
+    "thumbnail": "backrooms.png",
     "tags": ["Horror", "Exploration", "Atmospheric"]
   }
 ]
