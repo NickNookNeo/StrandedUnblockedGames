@@ -24,19 +24,19 @@
     }
 
     body {
-      padding: 0.4rem 0.8rem;
+      padding: 8px 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      gap: 0.35rem;
+      gap: 6px;
     }
 
     .header-container {
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 4px;
       flex-shrink: 0;
       z-index: 60;
     }
@@ -53,7 +53,7 @@
       text-decoration: none;
       background-color: rgba(30, 41, 59, 0.9);
       backdrop-filter: blur(8px);
-      padding: 0.3rem 0.6rem;
+      padding: 4px 10px;
       border-radius: 6px;
       font-size: 0.75rem;
       font-weight: 600;
@@ -70,11 +70,11 @@
     h1.game-title {
       grid-column: 2;
       text-align: center;
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: 800;
       margin: 0;
       text-transform: uppercase;
-      letter-spacing: 2px;
+      letter-spacing: 1px;
       background: linear-gradient(135deg, #ffffff 0%, #38bdf8 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -88,6 +88,7 @@
       width: 100%;
     }
 
+    /* Fixed Layout Wrapper that completely bypasses rigid flex box constraints */
     .player-wrapper {
       position: relative;
       width: 100%;
@@ -95,17 +96,19 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden !important;
+      overflow: hidden;
       outline: none;
       min-height: 0;
     }
 
     .game-viewport {
       position: relative;
+      width: 100%;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden !important;
+      overflow: hidden;
     }
 
     .screen-perspective {
@@ -129,8 +132,8 @@
       justify-content: center;
       width: 100%;
       height: 100%;
-      overflow: hidden !important;
-      background: transparent !important;
+      overflow: hidden;
+      background: #000 !important;
       border-radius: 6px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
@@ -149,19 +152,17 @@
       border-radius: inherit;
     }
 
+    /* Enforce strict Ruffle sizing compliance */
     ruffle-player {
       width: 100% !important;
       height: 100% !important;
       display: block !important;
-      background: transparent !important;
-      overflow: hidden !important;
     }
 
     ruffle-player::part(container),
     ruffle-player::part(canvas) {
       width: 100% !important;
       height: 100% !important;
-      background: transparent !important;
       object-fit: contain !important;
     }
 
@@ -188,32 +189,9 @@
 
     body.fx-scanlines .retro-crt-overlay {
       display: block;
-      background: linear-gradient(
-        rgba(18, 16, 16, 0) 50%, 
-        rgba(0, 0, 0, 0.45) 50%
-      );
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%);
       background-size: 100% 4px;
       animation: crt-roll 0.8s linear infinite, crt-flicker 0.15s infinite;
-    }
-
-    .retro-crt-overlay::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        to bottom,
-        rgba(255,255,255,0) 0%,
-        rgba(255,255,255,0.03) 50%,
-        rgba(255,255,255,0) 100%
-      );
-      height: 40px;
-      animation: scanbar 4s linear infinite;
-      pointer-events: none;
-    }
-
-    @keyframes scanbar {
-      0% { transform: translateY(-40px); }
-      100% { transform: translateY(105%); }
     }
 
     body.fx-glow .game-container {
@@ -228,16 +206,11 @@
       flex-direction: column !important;
       align-items: center !important;
       justify-content: space-between !important;
-      padding: 0.4rem 0.8rem !important;
+      padding: 8px 12px !important;
     }
 
     ::backdrop {
       background: radial-gradient(circle at center, #1e293b 0%, #050811 100%) !important;
-    }
-
-    :fullscreen .player-wrapper {
-      width: 100% !important;
-      flex: 1 !important;
     }
 
     .control-hover-trigger {
@@ -245,7 +218,7 @@
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 12px;
+      height: 35px;
       z-index: 120;
     }
 
@@ -266,9 +239,8 @@
       z-index: 130;
     }
 
-    .control-hover-trigger:hover + .control-bar,
-    .control-bar:hover,
-    .control-bar.visible {
+    .control-hover-trigger:hover ~ .control-bar,
+    .control-bar:hover {
       transform: translateY(0);
     }
 
@@ -351,7 +323,7 @@
       border-radius: 12px;
       width: 90%;
       max-width: 500px;
-      padding: 1.15rem;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
@@ -420,14 +392,15 @@
     }
   </style>
 
+  <!-- Load Ruffle library -->
   <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
   <script>
     window.RufflePlayer = window.RufflePlayer || {};
     window.RufflePlayer.config = {
       "scale": "showAll",
       "letterbox": "on",
-      "wmode": "transparent",
-      "backgroundColor": null,
+      "wmode": "window",
+      "backgroundColor": "#000000",
       "renderer": "canvas",
       "allowScriptAccess": true
     };
@@ -454,8 +427,7 @@
         <div class="game-container" id="game-container">
           <div class="flash-overlay" id="flash-overlay"></div>
           <div class="retro-crt-overlay"></div>
-          
-          <!-- Ruffle player is inserted here -->
+          <!-- Ruffle player injected dynamically via JS -->
         </div>
       </div>
 
@@ -559,13 +531,11 @@
       const shotBtn = document.getElementById("shot-btn");
       const flashOverlay = document.getElementById("flash-overlay");
 
-      // Load persistent volume memory if saved
       const savedVolume = localStorage.getItem("flash_player_volume");
       if (savedVolume !== null) {
         volumeSlider.value = savedVolume;
       }
 
-      // Apply volume helper
       function applyVolume(val) {
         if (player) {
           if (player.setVolume) player.setVolume(val); 
@@ -573,18 +543,7 @@
         }
       }
 
-      player.addEventListener("loadedmetadata", () => {
-        updateContainerAspect();
-        applyVolume(parseFloat(volumeSlider.value));
-      });
-
-      let activeListeningBtn = null;
-      let listeningType = null;
-      let isPaused = false;
-      let scanlinesActive = false;
-      let curvatureActive = false;
-      let glowActive = false;
-
+      // Explicit mathematical aspect ratio correction logic matching original Flash container boundaries
       function updateContainerAspect() {
         const wrapperWidth = wrapper.clientWidth;
         const wrapperHeight = wrapper.clientHeight;
@@ -604,15 +563,25 @@
         }
       }
 
+      player.addEventListener("loadedmetadata", () => {
+        updateContainerAspect();
+        applyVolume(parseFloat(volumeSlider.value));
+      });
+
       window.addEventListener("resize", updateContainerAspect);
       document.addEventListener("fullscreenchange", () => {
-        setTimeout(updateContainerAspect, 50);
-        setTimeout(updateContainerAspect, 200);
+        setTimeout(updateContainerAspect, 60);
       });
-      
+
       setTimeout(updateContainerAspect, 100);
-      setTimeout(updateContainerAspect, 500);
-      setTimeout(updateContainerAspect, 1000);
+      setTimeout(updateContainerAspect, 400);
+
+      let activeListeningBtn = null;
+      let listeningType = null;
+      let isPaused = false;
+      let scanlinesActive = false;
+      let curvatureActive = false;
+      let glowActive = false;
 
       document.getElementById("fx-modal-btn").onclick = () => fxModal.classList.add("open");
       document.getElementById("close-fx").onclick = () => { fxModal.classList.remove("open"); wrapper.focus(); };

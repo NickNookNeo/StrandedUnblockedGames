@@ -10,5 +10,11 @@
     "title": "Cactus McCoy",
     "thumbnail": "cactus_mccoy.jpg",
     "tags": ["action", "platformer", "adventure"]
+  },
+  {
+    "file": "papalouie.swf",
+    "title": "Papa Louie",
+    "thumbnail": "papalouie.jpg",
+    "tags": ["platformer", "puzzle", "educational"]
   }
 ]
